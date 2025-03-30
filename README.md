@@ -115,3 +115,10 @@ For issues not related to a specific feature, omit the user story but keep the s
 ### Labels
 
 All issues should be labeled with relevant labels found in the label dropdown at issue creation.
+
+### Feature branching
+
+All issues regarding changes in the repo should have their own branch. The branch should be created from the issue's page in Gitlab and subsequently be named
+in the format of <issue-name>-<title>.
+
+## 
