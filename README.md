@@ -126,3 +126,34 @@ in the format of <issue-name>-<title>.
 When working on unexpected behaviour or 'bugs', the same standard as feature development is in place. That includes, issue creation, 'feature branching' and labelling the issues correctly. Making sure the description of the unexpected behavior is clear in the issue description.
 Useful labels can be 'bug' or 'refactor' depending on what work is needed.
 
+## Commit messages
+
+This section outlines the standard praxis for commits in the project. The aim of the chapter is to give a clear modus operandi for any developer contributing.
+
+### Atomic Commits
+
+- Commits should represent a single logical change
+- Break larger changes into smaller commits for easier understandability
+- Commit related changes meaning avoid grouping unrelated changes into the same commit
+
+### Write Clear Commit Messages
+
+- Start each commit with a # for the issue it relates to
+- Each commit shall use imperative mood (e.g "Add feature", **NOT** "Added feature")
+- Describe changes concisely and precisely ("Add.." related to adding, "Refactor..." related to refactoring etc.)
+
+### Avoid committing Unnecessary Files
+
+- Includes developer environment files, build files etc.
+
+### Security Practice
+
+- Don't commit sensitive information such as passwords, network ID's or personal data
+
+### **Commit Message Template:**
+
+**Git commit -m “\<#issue-number\> - \<TITLE\>” -m “More detailed description”**
+
+* **`<#issue-number>`**: The issue the commit is connected to.
+* **`<TITLE>`**: In your head, think: “If I commit this, it will...” and complete the sentence with the title. This should be a concise summary of the change.
+* **`More detailed description`**: Use the second **`-m`** option to provide a detailed description if necessary.
