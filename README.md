@@ -121,4 +121,8 @@ All issues should be labeled with relevant labels found in the label dropdown at
 All issues regarding changes in the repo should have their own branch. The branch should be created from the issue's page in Gitlab and subsequently be named
 in the format of <issue-name>-<title>.
 
-## 
+## Fixing unexpected behavior in existing features
+
+When working on unexpected behaviour or 'bugs', the same standard as feature development is in place. That includes, issue creation, 'feature branching' and labelling the issues correctly. Making sure the description of the unexpected behavior is clear in the issue description.
+Useful labels can be 'bug' or 'refactor' depending on what work is needed.
+
