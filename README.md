@@ -157,3 +157,44 @@ This section outlines the standard praxis for commits in the project. The aim of
 * **`<#issue-number>`**: The issue the commit is connected to.
 * **`<TITLE>`**: In your head, think: “If I commit this, it will...” and complete the sentence with the title. This should be a concise summary of the change.
 * **`More detailed description`**: Use the second **`-m`** option to provide a detailed description if necessary.
+
+## Merge requests & code review
+
+This page contains the guidelines for merge requests in the StuWi project repo. The aim of the page is to give a clear conduct for both developers creating merge requests and reviewing merge requests.
+
+### Creating Merge Requests
+
+Merge requests are to be created once the issue/issues it resolves have been fully implemented according to their acceptance criteria. Merge requests are required when merging from a feature branch to the main branch. When creating a request, choose the standard project template as such:
+
+---
+
+**Description** <br />  
+`_Description about the merge. what it affects and what you have done_`
+
+**Related issue**   
+Closes issue #X 
+
+**Authors & Co-Authors** <br />
+_Authors_
+
+---
+
+Once the correct details have been filled out, assign yourself as the responsible for the request and a project member who have not made a commit in the merge request as the reviewer.
+
+### Reviewing Merge Requests
+
+As the reviewer of a merge request, your job is to review the changes made and make sure they adhere to the following:
+
+- Implements the correct features
+- Satisfies all the acceptance criteria
+- Maintains high code quality
+- Check for any potential bugs
+
+**Feedback**
+
+After reviewing, comment on the merge request with feedback. Communication should remain respectful, clear and constructive. When the request responsible have addressed the feedback with potential additional changes, review the new changes and approve the merge request if everything is in order.
+
+
+### Merging with target branch
+
+Before merging with the target branch, all merge conflicts are to be resolved locally and approval from the reviewer need to have been granted. As a general practice upon merge, the source branch should be closed. Exercise your own judgement on whether the source branch should be kept or deleted.
