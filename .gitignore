@@ -7,8 +7,7 @@ CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 Makefile
-build/
-build-*/
+src/build/
 
 # CI jobs that run in symlinked trees produce these artifacts.
 /real_work/
@@ -38,9 +37,6 @@ build-*/
 *.bak
 *.tmp
 
-#logfiles
-*
-
 
 # Compiled Objects and excecutables
 *.o
@@ -49,6 +45,7 @@ build-*/
 *.out
 *.a
 *.exe
+
 
 # Visual Studio Code
 /.vscode/
