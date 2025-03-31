@@ -53,6 +53,33 @@ Open a terminal and change directory to where you want to store the repository, 
 `cd dit639` <br>
 `git clone git@git.chalmers.se:courses/dit638/students/2025-group-06.git` <br>
 
+## Building and excecuting in the terminal
+This project uses cmake for building files. To build a file you navigate to the location of the file you want to build.
+
+<pre>cd example/example.cpp</pre>
+
+#### First build
+
+<pre>mkdir build
+cd build
+cmake ..
+make
+</pre>
+
+#### When building again
+
+<pre>
+cd build
+rm -f *    #CHECK THAT YOU ARE IN THE RIGHT FOLDER!!!!
+cmake ..
+make
+</pre>
+
+After you have built the file, the file is now excecutable. Make sure you are in the build folder. To excecute the file run
+
+<pre>./example "arguments" </pre>
+
+
 ## Badges
 On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
 
