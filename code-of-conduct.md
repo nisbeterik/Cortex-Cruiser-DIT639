@@ -38,7 +38,6 @@
 * Re-written text should be accompanied by the original, human-made text as reference.
 * All generated material should have relevant LLM chat logs transcribed and stored in the Git repo. For traceability, any issue, merge request, source code file etc should contain comments linking to the relevant transcripts. [Example](2025-group-06/llm-logs/llm-logs-03-29/log-llama-03-29.png)
 
-
 ## Signed
 - Erik Nisbet
 - Love Carlander Strandäng
