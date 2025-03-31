@@ -1,13 +1,5 @@
 # 2025-group-06
 
-
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
 ## Add your files
 
 - [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
@@ -44,10 +36,6 @@ Use the built-in continuous integration in GitLab.
 
 ***
 
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
 ## Suggestions for a good README
 
 Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
@@ -58,36 +46,208 @@ Choose a self-explaining name for your project.
 ## Description
 Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+## Requirements & Dependencies
+
+### Preqrequisites
+- The project assumes a Linux based operating system such as Ubuntu. 
+The tools required to be installed on the system are:
+    - g++ 
+        - Any version
+    - cmake
+        - Version 3.2+
+    - make
+        - Any version
+    - Docker
+        - Latest version
+    - wget
+        - Any version
+    - git
+        - Any version
+
+## How to install these tools
+    - g++: sudo apt-get install build-essential
+    - cmake: sudo apt-get install cmake
+    - make: included in build essential
+    - Docker: https://docs.docker.com/get-docker/
+    - wget: sudo apt-get install wget
+    - git: sudo apt-get install git
+## Required files
+* catch.hpp
+    - download: https://github.com/catchorg/Catch2/releases/download/v2.13.10/catch.hpp)
+
+
+## Cloning the repository
+Open a terminal and change directory to where you want to store the repository, for example desktop.
+```
+mkdir dit639
+cd dit639
+git clone git@git.chalmers.se:courses/dit638/students/2025-group-06.git
+```
+## Building and excecuting in the terminal
+This project uses cmake for building files. To build a file you navigate to the location of the file you want to build.
+```
+cd example/example.cpp
+```
+
+#### First build
+
+```
+mkdir build
+cd build
+cmake ..
+make
+```
+
+#### When building again
+
+```
+cd build
+rm -f *    #CHECK THAT YOU ARE IN THE RIGHT FOLDER!!!!
+cmake ..
+make
+```
+
+After you have built the file, the file is now excecutable. Make sure you are in the build folder. To excecute the file run
+
+```
+./example "arguments" 
+```
+
+
 
 ## Visuals
 Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
 
 ## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+- Martin Lidgren @marlidg
+- Edvin Sanfridssson 
+- Love Carlander Strandäng
+- Erik Nisbet @eriknis
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+## Creating new features
+
+This section outlines the workflow of creating new features for the project using Git issues. These standards are to be followed throughout the duration of the project.
+
+### Creating issues
+
+An issue should be created based on a requirement that represents a required feature. The issue title should be a clear, concise summary of the request.
+
+Every issue related to a feature should have at least one user story. A user story represents the need of a user that would require the feature to be implemented.
+
+### Template for Issues
+
+### Title
+
+Provide a clear, concise summary of the issue.
+
+### User Story
+
+> As a `<replace>`, I want `<replace>` so that `<replace>`
+
+### Short Description
+
+Include any additional details that may not be covered in the user story or acceptance criteria.
+
+### Acceptance Criteria
+
+- [ ] Verify that `<replace>`
+- [ ] Verify that `<replace>`
+
+---
+
+### Non-Feature Issues
+
+For issues not related to a specific feature, omit the user story but keep the same template structure (Title, Short Description, and Acceptance Criteria).
+
+### Labels
+
+All issues should be labeled with relevant labels found in the label dropdown at issue creation.
+
+### Feature branching
+
+All issues regarding changes in the repo should have their own branch. The branch should be created from the issue's page in Gitlab and subsequently be named
+in the format of <issue-name>-<title>.
+
+## Fixing unexpected behavior in existing features
+
+When working on unexpected behaviour or 'bugs', the same standard as feature development is in place. That includes, issue creation, 'feature branching' and labelling the issues correctly. Making sure the description of the unexpected behavior is clear in the issue description.
+Useful labels can be 'bug' or 'refactor' depending on what work is needed.
+
+## Commit messages
+
+This section outlines the standard praxis for commits in the project. The aim of the chapter is to give a clear modus operandi for any developer contributing.
+
+### Atomic Commits
+
+- Commits should represent a single logical change
+- Break larger changes into smaller commits for easier understandability
+- Commit related changes meaning avoid grouping unrelated changes into the same commit
+
+### Write Clear Commit Messages
+
+- Start each commit with a # for the issue it relates to
+- Each commit shall use imperative mood (e.g "Add feature", **NOT** "Added feature")
+- Describe changes concisely and precisely ("Add.." related to adding, "Refactor..." related to refactoring etc.)
+
+### Avoid committing Unnecessary Files
+
+- Includes developer environment files, build files etc.
+
+### Security Practice
+
+- Don't commit sensitive information such as passwords, network ID's or personal data
+
+### **Commit Message Template:**
+
+**Git commit -m “\<#issue-number\> - \<TITLE\>” -m “More detailed description”**
+
+* **`<#issue-number>`**: The issue the commit is connected to.
+* **`<TITLE>`**: In your head, think: “If I commit this, it will...” and complete the sentence with the title. This should be a concise summary of the change.
+* **`More detailed description`**: Use the second **`-m`** option to provide a detailed description if necessary.
+
+## Merge requests & code review
+
+This page contains the guidelines for merge requests in the StuWi project repo. The aim of the page is to give a clear conduct for both developers creating merge requests and reviewing merge requests.
+
+### Creating Merge Requests
+
+Merge requests are to be created once the issue/issues it resolves have been fully implemented according to their acceptance criteria. Merge requests are required when merging from a feature branch to the main branch. When creating a request, choose the standard project template as such:
+
+---
+
+**Description** <br />  
+`_Description about the merge. what it affects and what you have done_`
+
+**Related issue**   
+Closes issue #X 
+
+**Authors & Co-Authors** <br />
+_Authors_
+
+---
+
+Once the correct details have been filled out, assign yourself as the responsible for the request and a project member who have not made a commit in the merge request as the reviewer.
+
+### Reviewing Merge Requests
+
+As the reviewer of a merge request, your job is to review the changes made and make sure they adhere to the following:
+
+- Implements the correct features
+- Satisfies all the acceptance criteria
+- Maintains high code quality
+- Check for any potential bugs
+
+**Feedback**
+
+After reviewing, comment on the merge request with feedback. Communication should remain respectful, clear and constructive. When the request responsible have addressed the feedback with potential additional changes, review the new changes and approve the merge request if everything is in order.
+
+
+### Merging with target branch
+
+Before merging with the target branch, all merge conflicts are to be resolved locally and approval from the reviewer need to have been granted. As a general practice upon merge, the source branch should be closed. Exercise your own judgement on whether the source branch should be kept or deleted.
