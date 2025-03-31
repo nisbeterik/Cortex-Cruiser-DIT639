@@ -46,6 +46,36 @@ Choose a self-explaining name for your project.
 ## Description
 Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
 
+## Requirements & Dependencies
+
+### Preqrequisites
+- The project assumes a Linux based operating system such as Ubuntu. 
+The tools required to be installed on the system are:
+    - g++ 
+        - Any version
+    - cmake
+        - Version 3.2+
+    - make
+        - Any version
+    - Docker
+        - Latest version
+    - wget
+        - Any version
+    - git
+        - Any version
+
+## How to install these tools
+    - g++: sudo apt-get install build-essential
+    - cmake: sudo apt-get install cmake
+    - make: included in build essential
+    - Docker: https://docs.docker.com/get-docker/
+    - wget: sudo apt-get install wget
+    - git: sudo apt-get install git
+## Required files
+* catch.hpp
+    - download: https://github.com/catchorg/Catch2/releases/download/v2.13.10/catch.hpp)
+
+
 ## Cloning the repository
 Open a terminal and change directory to where you want to store the repository, for example desktop.
 ```
