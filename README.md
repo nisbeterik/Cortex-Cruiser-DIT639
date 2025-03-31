@@ -48,36 +48,40 @@ Let people know what your project can do specifically. Provide context and add a
 
 ## Cloning the repository
 Open a terminal and change directory to where you want to store the repository, for example desktop.
-
-`mkdir dit639` <br>
-`cd dit639` <br>
-`git clone git@git.chalmers.se:courses/dit638/students/2025-group-06.git` <br>
-
+```
+mkdir dit639
+cd dit639
+git clone git@git.chalmers.se:courses/dit638/students/2025-group-06.git
+```
 ## Building and excecuting in the terminal
 This project uses cmake for building files. To build a file you navigate to the location of the file you want to build.
-
-<pre>cd example/example.cpp</pre>
+```
+cd example/example.cpp
+```
 
 #### First build
 
-<pre>mkdir build
+```
+mkdir build
 cd build
 cmake ..
 make
-</pre>
+```
 
 #### When building again
 
-<pre>
+```
 cd build
 rm -f *    #CHECK THAT YOU ARE IN THE RIGHT FOLDER!!!!
 cmake ..
 make
-</pre>
+```
 
 After you have built the file, the file is now excecutable. Make sure you are in the build folder. To excecute the file run
 
-<pre>./example "arguments" </pre>
+```
+./example "arguments" 
+```
 
 
 ## Badges
