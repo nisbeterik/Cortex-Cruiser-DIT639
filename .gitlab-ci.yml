@@ -39,7 +39,7 @@ build-and-test:
     - docker-build
   stage: build
   script:
-    - ls
+    - cd src/
     - docker build -f Dockerfile .
 
 # This section describes what shall be done to deploy artefacts from the project.
