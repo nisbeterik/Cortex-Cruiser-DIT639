@@ -5,7 +5,7 @@
 
 TEST_CASE("Test PrimeChecker 1.") {
     PrimeChecker pc;
-    REQUIRE(pc.isPrime(4));
+    REQUIRE(pc.isPrime(5));
 }
 
 /*
