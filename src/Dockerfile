@@ -6,7 +6,7 @@ ADD . .
 RUN apk add --no-cache --virtual build-deps cmake g++ make && \
     mkdir -p build && cd build && \
     cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_EXE_LINKER_FLAGS="-static" .. && \
-    make && make test && ./runner && \
+    make && make test && helloworld-Runner && \
     strip helloworld && \
     cp helloworld /tmp/ && \
     apk del build-deps
