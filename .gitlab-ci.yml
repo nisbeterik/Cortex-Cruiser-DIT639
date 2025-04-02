@@ -38,7 +38,7 @@ before_script:
 # This section describes what shall be done to build and test the project.
 build-and-test:
   tags:
-    - docker-group6
+    - docker-build
   stage: build
   script:
     - cd src/
