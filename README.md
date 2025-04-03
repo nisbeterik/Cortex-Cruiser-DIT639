@@ -46,6 +46,9 @@ Choose a self-explaining name for your project.
 ## Description
 Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
 
+## Badges
+<img src="https://git.chalmers.se/courses/dit638/students/2025-group-06/badges/main/pipeline.svg?style=flat">
+
 ## Requirements & Dependencies
 
 ### Preqrequisites
