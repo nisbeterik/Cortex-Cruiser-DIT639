@@ -48,6 +48,7 @@ Let people know what your project can do specifically. Provide context and add a
 
 ## Badges
 <img src="https://git.chalmers.se/courses/dit638/students/2025-group-06/badges/main/pipeline.svg?style=flat">
+<img src="https://git.chalmers.se/courses/dit638/students/2025-group-06/-/releases/permalink/latest.svg?style=flat">
 
 ## Requirements & Dependencies
 
