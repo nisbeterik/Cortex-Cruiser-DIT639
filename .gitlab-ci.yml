@@ -59,6 +59,7 @@ test-coverage:
     - make
     - ctest 
     - lcov --capture --directory . --output-file coverage.info
+    - cat coverage.info
     - lcov --remove coverage.info '/usr/*' '*/catch.hpp' '*/test/*' --output-file coverage.info
     - mkdir -p coverage-report
     - genhtml --verbose coverage.info --output-directory coverage-report
