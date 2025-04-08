@@ -61,7 +61,7 @@ test-coverage:
     - lcov --capture --directory . --output-file coverage.info
     - lcov --remove coverage.info '/usr/*' '*/TestPrimeChecker.cpp' '*/catch.hpp' --output-file coverage_filtered.info
     - mkdir -p coverage-report
-    - genhtml --verbose coverage.info --output-directory coverage-report
+    - genhtml coverage.info --output-directory coverage-report
     - lcov --list coverage.info
   artifacts:
     paths:
