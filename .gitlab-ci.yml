@@ -27,6 +27,7 @@ services:
 
 stages:
   - build
+  - test
   - deploy
 
 # Display information before we start the build.
