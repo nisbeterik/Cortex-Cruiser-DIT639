@@ -27,6 +27,7 @@ services:
 
 stages:
   - build
+  - test
   - deploy
 
 # Display information before we start the build.
@@ -42,7 +43,33 @@ build-and-test:
   stage: build
   script:
     - cd src/
-    - docker build -f Dockerfile .
+    - docker build -f Dockerfile . 
+
+test-coverage:
+  tags:
+    - docker-build
+  image: alpine:latest
+  stage: test
+  before_script: []  
+  script:
+    - apk add --no-cache cmake g++ make lcov git perl gzip
+    - cd src/
+    - mkdir -p build && cd build
+    - cmake -DCODE_COVERAGE=ON ..
+    - make
+    - ctest 
+    - lcov --capture --directory . --output-file coverage.info
+    - lcov --remove coverage.info '/usr/*' '*/TestPrimeChecker.cpp' '*/catch.hpp' --output-file coverage_filtered.info
+    - mkdir -p coverage-report
+    - genhtml coverage_filtered.info --output-directory coverage-report
+    - lcov --list coverage.info
+  artifacts:
+    paths:
+      - src/build/coverage-report
+    expire_in: 2 months 
+  coverage: '/^\s*lines.*:\s*([\d.]+)%/'
+
+
 
 # This section describes what shall be done to deploy artefacts from the project.
 release:
