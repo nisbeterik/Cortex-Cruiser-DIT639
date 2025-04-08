@@ -44,6 +44,28 @@ build-and-test:
     - cd src/
     - docker build -f Dockerfile .
 
+test-coverage:
+  tags:
+    - docker-build
+  image: alpine:latest
+  stage: test
+  script:
+    - apk add --no-cache cmake g++ make gcov lcov git perl
+    - mkdir -p build && cd build
+    - cmake -DCODE_COVERAGE=ON ..
+    - make
+    - ctest 
+    - lcov --capture --directory . --ouktput-file coverage.info
+    - lcov --remove coverage.info '/usr/*' '*/catch.hpp' '*/test/*' --output-file coverage.info
+    - mkdir -p coverage-report
+    - genhtml coverage.info --output-directory coverage-report
+    - lcov --list coverage.info
+  artifacts:
+    paths:
+      - build/coverage-report
+    expire_in: 1 week
+  coverage: '/^\s*lines.*:\s*([\d.]+)%/'
+
 # This section describes what shall be done to deploy artefacts from the project.
 release:
   tags:
