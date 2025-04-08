@@ -50,13 +50,14 @@ test-coverage:
     - docker-build
   image: alpine:latest
   stage: test
+  before_script: []  # <--- disables the global before_script
   script:
     - apk add --no-cache cmake g++ make gcov lcov git perl
     - mkdir -p build && cd build
     - cmake -DCODE_COVERAGE=ON ..
     - make
     - ctest 
-    - lcov --capture --directory . --ouktput-file coverage.info
+    - lcov --capture --directory . --output-file coverage.info
     - lcov --remove coverage.info '/usr/*' '*/catch.hpp' '*/test/*' --output-file coverage.info
     - mkdir -p coverage-report
     - genhtml coverage.info --output-directory coverage-report
@@ -66,6 +67,8 @@ test-coverage:
       - build/coverage-report
     expire_in: 1 week
   coverage: '/^\s*lines.*:\s*([\d.]+)%/'
+
+
 
 # This section describes what shall be done to deploy artefacts from the project.
 release:
