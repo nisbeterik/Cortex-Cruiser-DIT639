@@ -43,7 +43,7 @@ build-and-test:
   stage: build
   script:
     - cd src/
-    - docker build -f Dockerfile .
+    - docker build -f Dockerfile . 
 
 test-coverage:
   tags:
