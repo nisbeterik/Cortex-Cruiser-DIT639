@@ -42,7 +42,7 @@ build-and-test:
     - docker-build
   stage: build
   script:
-    - cd src/
+    - cd cpp-opencv/src/
     - docker build -f Dockerfile . 
 
 test-coverage:
