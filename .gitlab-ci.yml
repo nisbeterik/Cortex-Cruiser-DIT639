@@ -48,7 +48,7 @@ stages:
 test-coverage:
   tags:
     - docker-build
-  image: alpine:latest
+  image: buildpack-deps:bullseye
   stage: test
   before_script: []  
   script:
