@@ -26,24 +26,24 @@ services:
   - name: docker:20.10.14-dind
 
 stages:
-  - build
+  # - build
   - test
   - deploy
 
 # Display information before we start the build.
-before_script:
-  - docker info
-  - echo $CI_REGISTRY_USER $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+#before_script:
+ # - docker info
+  #- echo $CI_REGISTRY_USER $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  #- docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 # This section describes what shall be done to build and test the project.
-build-and-test:
-  tags:
-    - docker-build
-  stage: build
-  script:
-    - cd cpp-opencv/
-    - docker build -f Dockerfile . 
+#build:
+#  tags:
+#    - docker-build
+#  stage: build
+#  script:
+#    - cd cpp-opencv/
+#    - docker build -f Dockerfile . 
 
 test-coverage:
   tags:
