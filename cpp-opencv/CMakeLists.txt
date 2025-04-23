@@ -122,7 +122,7 @@ add_dependencies(${PROJECT_NAME} generate_opendlv_standard_message_set_hpp)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ${PROJECT_NAME})
 
-add_executable(${PROJECT_NAME}-Runner test/test_istrue.cpp src/istrue.cpp)
+add_executable(${PROJECT_NAME}-Runner test/test-template.cpp src/istrue.cpp)
 
 target_link_libraries(${PROJECT_NAME}-Runner ${LIBRARIES})
 
