@@ -52,20 +52,7 @@ test-coverage:
   stage: test
   before_script: []  
   script:
-    - apt-get update && apt-get install -y \
-        cmake \
-        g++ \
-        make \
-        lcov \
-        git \
-        perl \
-        gzip \
-        libopencv-dev \
-        ca-certificates \
-        build-essential \
-        libopencv-core3.2 \
-        libopencv-highgui3.2 \
-        libopencv-imgproc3.2
+    - apt-get update && apt-get install -y cmake g++ make lcov git perl gzip ca-certificates build-essential libopencv-dev
     #- apk add --no-cache cmake g++ make lcov git perl gzip libopencv-dev
     - cd cpp-opencv/
     - mkdir -p build && cd build
