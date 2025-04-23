@@ -60,7 +60,7 @@ test-coverage:
     - make
     - ctest 
     - lcov --capture --directory . --output-file coverage.info
-    - lcov --remove coverage.info '/usr/*' '*/TestPrimeChecker.cpp' '*/catch.hpp' --output-file coverage_filtered.info
+    - lcov --remove coverage.info '/usr/*' '*/´test-template.cpp' '*/catch.hpp' --output-file coverage_filtered.info
     - mkdir -p coverage-report
     - genhtml coverage_filtered.info --output-directory coverage-report
     - lcov --list coverage.info
