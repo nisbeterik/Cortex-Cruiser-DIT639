@@ -22,28 +22,28 @@ variables:
   DOCKER_TLS_CERTDIR: ""
   semver_pattern: '/^v([0-9]+)\.([0-9]+)\.([0-9]+)?$/'
 
-#services:
-# - name: docker:20.10.14-dind
+services:
+ - name: docker:20.10.14-dind
 
 stages:
-  # - build
+  - build
   - test
   - deploy
 
 # Display information before we start the build.
 #before_script:
- # - docker info
-  #- echo $CI_REGISTRY_USER $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  #- docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - docker info
+  - echo $CI_REGISTRY_USER $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 # This section describes what shall be done to build and test the project.
-#build:
-#  tags:
-#    - docker-build
-#  stage: build
-#  script:
-#    - cd cpp-opencv/
-#    - docker build -f Dockerfile . 
+build:
+  tags:
+    - docker-build
+  stage: build
+  script:
+    - cd cpp-opencv/
+    - docker build -f Dockerfile . 
 
 test-coverage:
   tags:
@@ -54,7 +54,6 @@ test-coverage:
   script:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get install -y cmake g++ make lcov git perl gzip ca-certificates build-essential libopencv-dev libopencv-core3.2 libopencv-highgui3.2 libopencv-imgproc3.2
-    #- apk add --no-cache cmake g++ make lcov git perl gzip libopencv-dev
     - cd cpp-opencv/
     - mkdir -p build && cd build
     - cmake -DCODE_COVERAGE=ON ..
