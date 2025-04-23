@@ -53,7 +53,7 @@ test-coverage:
   before_script: []  
   script:
     - apk add --no-cache cmake g++ make lcov git perl gzip
-    - cd cpp-opencv/src
+    - cd cpp-opencv/
     - mkdir -p build && cd build
     - cmake -DCODE_COVERAGE=ON ..
     - make
