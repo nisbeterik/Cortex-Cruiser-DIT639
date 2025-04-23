@@ -124,6 +124,6 @@ install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ${PROJECT_NAME})
 
 enable_testing()
 add_executable(template-opencv-Runner src/template-opencv.cpp)
-add_executable(test-template src/test-template.cpp)
+add_executable(test-template src/test-template.cpp src/template-opencv.cpp)
 add_test(NAME ${PROJECT_NAME}-Runner COMMAND ${PROJECT_NAME}-Runner)
 
