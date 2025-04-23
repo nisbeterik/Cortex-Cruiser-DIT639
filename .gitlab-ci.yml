@@ -52,6 +52,7 @@ test-coverage:
   stage: test
   before_script: []  
   script:
+    - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get install -y cmake g++ make lcov git perl gzip ca-certificates build-essential libopencv-dev libopencv-core3.2 libopencv-highgui3.2 libopencv-imgproc3.2
     #- apk add --no-cache cmake g++ make lcov git perl gzip libopencv-dev
     - cd cpp-opencv/
