@@ -48,18 +48,14 @@ stages:
 test-coverage:
   tags:
     - docker-build
-  image: ubuntu:18.04
+  image: alpine:latest 
   stage: test
   before_script: []  
   script:
-    - apt-get update
-    - DEBIAN_FRONTEND=noninteractive apt-get install -y cmake g++ make lcov git perl gzip ca-certificates build-essential libopencv-dev libopencv-core3.2 libopencv-highgui3.2 libopencv-imgproc3.2
-    #- apk add --no-cache cmake g++ make lcov git perl gzip libopencv-dev
+    - apk add --no-cache cmake g++ make lcov git perl gzip libopencv-dev
     - cd cpp-opencv/
     - mkdir -p build && cd build
     - cmake -DCODE_COVERAGE=ON ..
-    - cmake --build . --target generate-cluon-msc
-    - cmake --build . --target generate-opendlv-header
     - make
     - ctest 
     - lcov --capture --directory . --output-file coverage.info
