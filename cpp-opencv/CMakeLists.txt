@@ -56,6 +56,20 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+option(CODE_COVERAGE "Enable coverage reporting" OFF)
+
+if(CODE_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "Code coverage enabled")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -O0")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+        add_custom_target(generate-cluon-msc DEPENDS ${CMAKE_BINARY_DIR}/cluon-msc)
+        add_custom_target(generate-opendlv-header DEPENDS ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp)
+    endif()
+else()
+    set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+endif()
+
 ################################################################################
 # Extract cluon-msc from cluon-complete.hpp.
 # cluon-msc is the message compiler that compiles a .odvd message specification into a header-only C++ file.
@@ -104,21 +118,12 @@ add_dependencies(${PROJECT_NAME} generate_opendlv_standard_message_set_hpp)
 
 ################################################################################
 # Install executable.
-option(CODE_COVERAGE "Enable coverage reporting" OFF)
 
-if(CODE_COVERAGE)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        message(STATUS "Code coverage enabled")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -O0")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
-        add_custom_target(generate-cluon-msc DEPENDS ${CMAKE_BINARY_DIR}/cluon-msc)
-        add_custom_target(generate-opendlv-header DEPENDS ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp)
-    endif()
-endif()
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME}-Runner src/template-opencv.cpp)
+target_link_libraries(${PROJECT_NAME}-Runner ${LIBRARIES})
 add_test(NAME ${PROJECT_NAME}-Runner COMMAND ${PROJECT_NAME}-Runner)
 
 add_executable(${PROJECT_NAME}-Test src/test-template.cpp src/template-opencv.cpp)
