@@ -1,4 +1,4 @@
-#include "template-opencv.hpp"
+#include "istrue.hpp"
 
 bool isTrue() {
     return true;
