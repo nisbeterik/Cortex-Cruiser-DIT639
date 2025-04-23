@@ -48,7 +48,7 @@ stages:
 test-coverage:
   tags:
     - docker-build
-  image: buildpack-deps:bullseye
+  image: ubuntu:18.04 
   stage: test
   before_script: []  
   script:
