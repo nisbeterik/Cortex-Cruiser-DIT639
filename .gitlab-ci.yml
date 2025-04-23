@@ -69,7 +69,7 @@ test-coverage:
     - lcov --list coverage.info
   artifacts:
     paths:
-      - cpp-opencv/src/build/coverage-report
+      - cpp-opencv/build/coverage-report
     expire_in: 2 months 
   coverage: '/^\s*lines.*:\s*([\d.]+)%/'
 
