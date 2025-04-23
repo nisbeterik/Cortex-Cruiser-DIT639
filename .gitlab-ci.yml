@@ -48,11 +48,11 @@ stages:
 test-coverage:
   tags:
     - docker-build
-  image: buildpack-deps:bullseye
+  image: ubuntu:18.04
   stage: test
   before_script: []  
   script:
-    - apt-get update && apt-get install -y cmake g++ make lcov git perl gzip ca-certificates build-essential libopencv-dev 
+    - apt-get update && apt-get install -y cmake g++ make lcov git perl gzip ca-certificates build-essential libopencv-dev libopencv-core3.2 libopencv-highgui3.2 libopencv-imgproc3.2 
     #- apk add --no-cache cmake g++ make lcov git perl gzip libopencv-dev
     - cd cpp-opencv/
     - mkdir -p build && cd build
