@@ -58,7 +58,8 @@ test-coverage:
     - cd cpp-opencv/
     - mkdir -p build && cd build
     - cmake -DCODE_COVERAGE=ON ..
-    - cmake --build . --target generate-cluon-msc generate-opendlv-header
+    - cmake --build . --target generate-cluon-msc
+    - cmake --build . --target generate-opendlv-header
     - make
     - ctest 
     - lcov --capture --directory . --output-file coverage.info
