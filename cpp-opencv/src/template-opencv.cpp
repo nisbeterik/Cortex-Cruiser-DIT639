@@ -32,11 +32,7 @@
 #include <string>
 #include <iomanip>
 
-bool isTrue() {
-    return true;
-}
 
-#ifndef CODE_COVERAGE
 int32_t main(int32_t argc, char **argv) {
     int32_t retCode{1};
     // Parse the command line parameters as we require the user to specify some mandatory information on startup.
@@ -155,4 +151,3 @@ int32_t main(int32_t argc, char **argv) {
     }
     return retCode;
 }
-#endif

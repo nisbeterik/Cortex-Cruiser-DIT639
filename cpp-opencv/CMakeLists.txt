@@ -122,10 +122,7 @@ add_dependencies(${PROJECT_NAME} generate_opendlv_standard_message_set_hpp)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ${PROJECT_NAME})
 
-add_executable(${PROJECT_NAME}-Runner src/template-opencv.cpp)
-target_link_libraries(${PROJECT_NAME}-Runner ${LIBRARIES})
-add_test(NAME ${PROJECT_NAME}-Runner COMMAND ${PROJECT_NAME}-Runner)
 
-add_executable(${PROJECT_NAME}-Test src/test-template.cpp src/template-opencv.cpp)
-target_link_libraries(${PROJECT_NAME}-Test ${OpenCV_LIBS} Threads::Threads)
-add_test(NAME ${PROJECT_NAME}-Test COMMAND ${PROJECT_NAME}-Test)
+enable_testing()
+add_executable(${PROJECT_NAME}-Runner src/istrue.cpp)
+add_test(NAME ${PROJECT_NAME}-Runner COMMAND ${PROJECT_NAME}-Runner)

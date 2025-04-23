@@ -2,6 +2,6 @@
 #include "catch.hpp"
 #include "template-opencv.hpp"
 
-TEST_CASE("isTrue returns true", "[template-opencv]") {
+TEST_CASE("isTrue returns true", "[istrue]") {
     REQUIRE(isTrue() == true);
 }
