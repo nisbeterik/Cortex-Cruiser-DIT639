@@ -63,6 +63,8 @@ if(CODE_COVERAGE)
         message(STATUS "Code coverage enabled")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -O0")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+        add_custom_target(generate-cluon-msc DEPENDS ${CMAKE_BINARY_DIR}/cluon-msc)
+        add_custom_target(generate-opendlv-header DEPENDS ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp)
     endif()
 else()
     set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
@@ -120,7 +122,6 @@ add_dependencies(${PROJECT_NAME} generate_opendlv_standard_message_set_hpp)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ${PROJECT_NAME})
 
-
-enable_testing()
 add_executable(${PROJECT_NAME}-Runner src/istrue.cpp)
+target_link_libraries(${PROJECT_NAME}-Runner ${LIBRARIES})
 add_test(NAME ${PROJECT_NAME}-Runner COMMAND ${PROJECT_NAME}-Runner)
