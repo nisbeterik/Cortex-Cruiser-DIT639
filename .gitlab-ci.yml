@@ -23,7 +23,7 @@ variables:
   semver_pattern: '/^v([0-9]+)\.([0-9]+)\.([0-9]+)?$/'
 
 services:
-  - name: docker:20.10.14-dind
+ - name: docker:20.10.14-dind
 
 stages:
   - build
@@ -31,41 +31,44 @@ stages:
   - deploy
 
 # Display information before we start the build.
-before_script:
+#before_script:
   - docker info
   - echo $CI_REGISTRY_USER $CI_REGISTRY_PASSWORD $CI_REGISTRY
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 # This section describes what shall be done to build and test the project.
-build-and-test:
+build:
   tags:
     - docker-build
   stage: build
   script:
-    - cd src/
+    - cd cpp-opencv/
     - docker build -f Dockerfile . 
 
 test-coverage:
   tags:
     - docker-build
-  image: alpine:latest
+  image: ubuntu:18.04
   stage: test
   before_script: []  
   script:
-    - apk add --no-cache cmake g++ make lcov git perl gzip
-    - cd src/
+    - apt-get update
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y cmake g++ make lcov git perl gzip ca-certificates build-essential libopencv-dev libopencv-core3.2 libopencv-highgui3.2 libopencv-imgproc3.2
+    - cd cpp-opencv/
     - mkdir -p build && cd build
     - cmake -DCODE_COVERAGE=ON ..
+    - cmake --build . --target generate-cluon-msc
+    - cmake --build . --target generate-opendlv-header
     - make
     - ctest 
     - lcov --capture --directory . --output-file coverage.info
-    - lcov --remove coverage.info '/usr/*' '*/TestPrimeChecker.cpp' '*/catch.hpp' --output-file coverage_filtered.info
+    - lcov --remove coverage.info '/usr/*' '*/´test-template.cpp' '*/catch.hpp' --output-file coverage_filtered.info
     - mkdir -p coverage-report
     - genhtml coverage_filtered.info --output-directory coverage-report
     - lcov --list coverage.info
   artifacts:
     paths:
-      - src/build/coverage-report
+      - cpp-opencv/build/coverage-report
     expire_in: 2 months 
   coverage: '/^\s*lines.*:\s*([\d.]+)%/'
 
@@ -80,6 +83,6 @@ release:
     - if: '$CI_COMMIT_TAG =~ $semver_pattern'
       when: always
   script:
-    - cd src/
+    - cd cpp-opencv/
     - docker build -f Dockerfile -t "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG" .
     - docker push "$CI_REGISTRY_IMAGE":"$CI_COMMIT_TAG"
