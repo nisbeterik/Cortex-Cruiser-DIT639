@@ -17,7 +17,7 @@
 
 // Include the single-file, header-only middleware libcluon to create high-performance microservices
 #include "cluon-complete.hpp"
-// Include the OpenDLV Standard Message Set that contains messages that are usually exchanged for automotive or robotic applications 
+// Include the OpenDLV Standard Message Set that contains messages that are usually exchanged for automotive or robotic applications
 #include "opendlv-standard-message-set.hpp"
 // Include the GUI and image processing header files from OpenCV
 #include <opencv2/highgui/highgui.hpp>
@@ -31,15 +31,16 @@
 #include <string>
 #include <iomanip>
 
-
-int32_t main(int32_t argc, char **argv) {
+int32_t main(int32_t argc, char **argv)
+{
     int32_t retCode{1};
     // Parse the command line parameters as we require the user to specify some mandatory information on startup.
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
-    if ( (0 == commandlineArguments.count("cid")) ||
-         (0 == commandlineArguments.count("name")) ||
-         (0 == commandlineArguments.count("width")) ||
-         (0 == commandlineArguments.count("height")) ) {
+    if ((0 == commandlineArguments.count("cid")) ||
+        (0 == commandlineArguments.count("name")) ||
+        (0 == commandlineArguments.count("width")) ||
+        (0 == commandlineArguments.count("height")))
+    {
         std::cerr << argv[0] << " attaches to a shared memory area containing an ARGB image." << std::endl;
         std::cerr << "Usage:   " << argv[0] << " --cid=<OD4 session> --name=<name of shared memory area> [--verbose]" << std::endl;
         std::cerr << "         --cid:    CID of the OD4Session to send and receive messages" << std::endl;
@@ -48,7 +49,8 @@ int32_t main(int32_t argc, char **argv) {
         std::cerr << "         --height: height of the frame" << std::endl;
         std::cerr << "Example: " << argv[0] << " --cid=253 --name=img --width=640 --height=480 --verbose" << std::endl;
     }
-    else {
+    else
+    {
         // Extract the values from the command line parameters
         const std::string NAME{commandlineArguments["name"]};
         const uint32_t WIDTH{static_cast<uint32_t>(std::stoi(commandlineArguments["width"]))};
@@ -57,7 +59,8 @@ int32_t main(int32_t argc, char **argv) {
 
         // Attach to the shared memory.
         std::unique_ptr<cluon::SharedMemory> sharedMemory{new cluon::SharedMemory{NAME}};
-        if (sharedMemory && sharedMemory->valid()) {
+        if (sharedMemory && sharedMemory->valid())
+        {
             std::clog << argv[0] << ": Attached to shared memory '" << sharedMemory->name() << " (" << sharedMemory->size() << " bytes)." << std::endl;
 
             // Interface to a running OpenDaVINCI session where network messages are exchanged.
@@ -66,7 +69,8 @@ int32_t main(int32_t argc, char **argv) {
 
             opendlv::proxy::GroundSteeringRequest gsr;
             std::mutex gsrMutex;
-            auto onGroundSteeringRequest = [&gsr, &gsrMutex](cluon::data::Envelope &&env){
+            auto onGroundSteeringRequest = [&gsr, &gsrMutex](cluon::data::Envelope &&env)
+            {
                 // The envelope data structure provide further details, such as sampleTimePoint as shown in this test case:
                 // https://github.com/chrberger/libcluon/blob/master/libcluon/testsuites/TestEnvelopeConverter.cpp#L31-L40
                 std::lock_guard<std::mutex> lck(gsrMutex);
@@ -77,7 +81,8 @@ int32_t main(int32_t argc, char **argv) {
             od4.dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), onGroundSteeringRequest);
 
             // Endless loop; end the program by pressing Ctrl-C.
-            while (od4.isRunning()) {
+            while (od4.isRunning())
+            {
                 // OpenCV data structure to hold an image.
                 cv::Mat img;
 
@@ -92,46 +97,78 @@ int32_t main(int32_t argc, char **argv) {
                     img = wrapped.clone();
                 }
                 // TODO: Here, you can add some code to check the sampleTimePoint when the current frame was captured.
-		auto [isValid, ts] = sharedMemory->getTimeStamp();
-                sharedMemory->unlock(); 	
 
-		// Convert to ms
-		int64_t ts_ms = cluon::time::toMicroseconds(ts);	
-	
-		// Get current time
-		cluon::data::TimeStamp now = cluon::time::now();
+                auto [isValid, ts] = sharedMemory->getTimeStamp();
+                sharedMemory->unlock();
 
-		// Extract seconds and microseconds from now-TimeStamp
-		uint64_t seconds = now.seconds();
-		std::time_t time = static_cast<std::time_t>(seconds);
+                // Convert to ms
+                int64_t ts_ms = cluon::time::toMicroseconds(ts);
 
-		// Convert current time to UTC
-                std::tm* utc_time = std::gmtime(&time);
-		std::ostringstream utc_time_stream;
-   		utc_time_stream << std::put_time(utc_time, "%Y-%m-%dT%H:%M:%SZ");
+                // Get current time
+                cluon::data::TimeStamp now = cluon::time::now();
 
-   		// Construct the final string
-		std::string name = "Lidgren, Martin";
-   		std::ostringstream final_stream;
-   		final_stream << "Now: " << utc_time_stream.str() 
-                	     << "; ts: " << ts_ms 
-                       	     << "; " << name;
+                // Extract seconds and microseconds from now-TimeStamp
+                uint64_t seconds = now.seconds();
+                std::time_t time = static_cast<std::time_t>(seconds);
 
-   		std::string final_string = final_stream.str();
+                // Convert current time to UTC
+                std::tm *utc_time = std::gmtime(&time);
+                std::ostringstream utc_time_stream;
+                utc_time_stream << std::put_time(utc_time, "%Y-%m-%dT%H:%M:%SZ");
 
-                // TODO: Do something with the frame.
-                // Example: Draw a red rectangle and display image.
-                cv::rectangle(img, cv::Point(50, 50), cv::Point(100, 100), cv::Scalar(0,0,255));
-		
-		// Create text
-		cv::Point text_position(10, 30);
-		int font_face = cv::FONT_HERSHEY_SIMPLEX;
-		double font_scale = 0.5;
-		int thickness = 1;
-		cv::Scalar text_color(255, 255, 255);
+                // Construct the final string
+                std::string name = "Group 06";
+                std::ostringstream final_stream;
+                final_stream << "Now: " << utc_time_stream.str()
+                             << "; ts: " << ts_ms
+                             << "; " << name;
 
-		// Overlay the text on the frame
-		cv::putText(img, final_string, text_position, font_face, font_scale, text_color, thickness);
+                std::string final_string = final_stream.str();
+
+                // Create text
+                cv::Point text_position(10, 30);
+                int font_face = cv::FONT_HERSHEY_SIMPLEX;
+                double font_scale = 0.5;
+                int thickness = 1;
+                cv::Scalar text_color(255, 255, 255);
+
+                // Overlay the text on the frame
+                cv::putText(img, final_string, text_position, font_face, font_scale, text_color, thickness);
+
+                // TODO: STEERING ANGLE CALCULATION
+
+                // 1. Convert to img HSV Color Space
+                cv::Mat hsvImage;
+                cv::cvtColor(img, hsvImage, cv::COLOR_BGR2HSV);
+
+                // 2. Mask for blue cones
+                cv::Mat mask;
+                cv::inRange(hsvImage, cv::Scalar(45, 0, 0), cv::Scalar(140, 255, 255), mask);
+
+                // 3. Process the mask
+                std::vector<std::vector<cv::Point>> contours;
+                cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+                // Analyze the contours to calculate steering.
+                for (const auto &contour : contours)
+                {
+                    cv::Rect boundingBox = cv::boundingRect(contour);
+                    cv::Point center = (boundingBox.tl() + boundingBox.br()) * 0.5;
+
+                    // Example: Draw the center point
+                    cv::circle(img, center, 5, cv::Scalar(0, 255, 0), -1);
+
+                    // Calculate steering based on center point position
+                    // (e.g., relative to image width).
+                }
+
+                // 4. Calculate steering
+                float steeringAngle = 
+                // logic goes here
+
+
+                // 5. Print steering
+                std::cout << "Group 6" << ts_ms << ";" << steeringAngle << std::endl;
 
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
@@ -140,7 +177,8 @@ int32_t main(int32_t argc, char **argv) {
                 }
 
                 // Display image on your screen.
-                if (VERBOSE) {
+                if (VERBOSE)
+                {
                     cv::imshow(sharedMemory->name().c_str(), img);
                     cv::waitKey(1);
                 }
