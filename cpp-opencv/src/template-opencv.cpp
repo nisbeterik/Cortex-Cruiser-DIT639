@@ -89,6 +89,7 @@ int32_t main(int32_t argc, char **argv)
                 std::lock_guard<std::mutex> lck(gsrMutex);
                 gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env));
                 std::cout << "lambda: groundSteering = " << gsr.groundSteering() << std::endl;
+
             };
 
             od4.dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), onGroundSteeringRequest);
@@ -154,7 +155,7 @@ int32_t main(int32_t argc, char **argv)
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
                     std::lock_guard<std::mutex> lck(gsrMutex);
-                    std::cout << "main: groundSteering = " << gsr.groundSteering() << std::endl;
+                    std::cout << "main: groundSteering = " << gsr.groundSteering() << "ts: " << ts_max << std::endl;
                 }
 
                 // Display image on your screen.
