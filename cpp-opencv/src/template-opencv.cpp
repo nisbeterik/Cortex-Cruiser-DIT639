@@ -31,6 +31,19 @@
 #include <string>
 #include <iomanip>
 
+// Declaration of method for processing image and calcualting steering
+double processFrame(cv::Mat &img, bool verbose);
+
+// GLOBAL VARIABLES
+
+// HSV ranges for blue and yellow (change values later)
+const cv::Scalar BLUE_LOWER(100, 150, 50);
+const cv::Scalar BLUE_UPPER(140, 255, 255);
+const cv::Scalar YELLOW_LOWER(20, 150, 50);
+const cv::Scalar YELLOW_UPPER(30, 255, 255);
+
+double SCALE_FACTOR = 0.1; // Adjust as needed
+
 int32_t main(int32_t argc, char **argv)
 {
     int32_t retCode{1};
@@ -96,7 +109,6 @@ int32_t main(int32_t argc, char **argv)
                     cv::Mat wrapped(HEIGHT, WIDTH, CV_8UC4, sharedMemory->data());
                     img = wrapped.clone();
                 }
-                // TODO: Here, you can add some code to check the sampleTimePoint when the current frame was captured.
 
                 auto [isValid, ts] = sharedMemory->getTimeStamp();
                 sharedMemory->unlock();
@@ -135,40 +147,9 @@ int32_t main(int32_t argc, char **argv)
                 // Overlay the text on the frame
                 cv::putText(img, final_string, text_position, font_face, font_scale, text_color, thickness);
 
-                // TODO: STEERING ANGLE CALCULATION
-
-                // 1. Convert to img HSV Color Space
-                cv::Mat hsvImage;
-                cv::cvtColor(img, hsvImage, cv::COLOR_BGR2HSV);
-
-                // 2. Mask for blue cones
-                cv::Mat mask;
-                cv::inRange(hsvImage, cv::Scalar(45, 0, 0), cv::Scalar(140, 255, 255), mask);
-
-                // 3. Process the mask
-                std::vector<std::vector<cv::Point>> contours;
-                cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-
-                // Analyze the contours to calculate steering.
-                for (const auto &contour : contours)
-                {
-                    cv::Rect boundingBox = cv::boundingRect(contour);
-                    cv::Point center = (boundingBox.tl() + boundingBox.br()) * 0.5;
-
-                    // Example: Draw the center point
-                    cv::circle(img, center, 5, cv::Scalar(0, 255, 0), -1);
-
-                    // Calculate steering based on center point position
-                    // (e.g., relative to image width).
-                }
-
-                // 4. Calculate steering
-                float steeringAngle = 
-                // logic goes here
-
-
-                // 5. Print steering
-                std::cout << "Group 6" << ts_ms << ";" << steeringAngle << std::endl;
+                // Pass the frame to the helper function for processing
+                double steeringAngle = processFrame(img, VERBOSE);
+                std::cout << "Calculated steering angle: " << steeringAngle << std::endl;
 
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
@@ -187,4 +168,56 @@ int32_t main(int32_t argc, char **argv)
         retCode = 0;
     }
     return retCode;
+
+    double processFrame(cv::Mat & img, bool verbose){
+
+        // Convert to HSV color space
+        cv::Mat hsvImage;
+        cv::cvtColor(img, hsvImage, cv::COLOR_BGR2HSV);
+
+        // Create masks for blue and yellow cones
+        cv::Mat blueMask, yellowMask;
+        cv::inRange(hsvImage, BLUE_LOWER, BLUE_UPPER, blueMask);
+        cv::inRange(hsvImage, YELLOW_LOWER, YELLOW_UPPER, yellowMask);
+
+        // Find contours for blue and yellow cones
+        std::vector<std::vector<cv::Point>> blueContours, yellowContours;
+        cv::findContours(blueMask, blueContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+        cv::findContours(yellowMask, yellowContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+        // Calculate centroids for blue and yellow cones
+        cv::Point blueCentroid(0, 0), yellowCentroid(0, 0);
+        if (!blueContours.empty())
+        {
+            cv::Moments m = cv::moments(blueContours[0]);
+            blueCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
+        }
+        if (!yellowContours.empty())
+        {
+            cv::Moments m = cv::moments(yellowContours[0]);
+            yellowCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
+        }
+
+        // Draw centroids for debugging
+        cv::circle(img, blueCentroid, 5, cv::Scalar(255, 0, 0), -1);
+        cv::circle(img, yellowCentroid, 5, cv::Scalar(0, 255, 255), -1);
+
+        // Calculate the center point
+        cv::Point pathCenter((blueCentroid.x + yellowCentroid.x) / 2, (blueCentroid.y + yellowCentroid.y) / 2);
+        cv::circle(img, pathCenter, 5, cv::Scalar(0, 255, 0), -1);
+
+        // Calculate the steering angle
+        int imageCenterX = img.cols / 2;
+        double steeringAngle = (pathCenter.x - imageCenterX) * SCALE_FACTOR;
+
+        // Debugging output
+        if (verbose)
+        {
+            cv::imshow("Processed Frame", img);
+            cv::imshow("Blue Mask", blueMask);
+            cv::imshow("Yellow Mask", yellowMask);
+        }
+
+        return steeringAngle;
+    }
 }
