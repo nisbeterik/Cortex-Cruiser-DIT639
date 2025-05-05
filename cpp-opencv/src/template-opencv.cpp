@@ -216,13 +216,20 @@ double processFrame(cv::Mat &img, bool verbose) {
     cv::Point yellowCentroid = lastYellowCentroid;
 
     // Find the centroids of the blue and yellow contours
-    if (!blueContours.empty() && m.m00 != 0) {
-        blueCentroid = cv::Point(m.m10/m.m00, m.m01/m.m00);
-        lastBlueCentroid = blueCentroid;
+    if (!blueContours.empty()) {
+        cv::Moments m = cv::moments(blueContours[0]);
+        if (m.m00 != 0) {
+            blueCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
+            lastBlueCentroid = blueCentroid;
+        }
     }
-    if (!yellowContours.empty() && m.m00 != 0) {
-        yellowCentroid = cv::Point(m.m10/m.m00, m.m01/m.m00);
-        lastYellowCentroid = yellowCentroid;
+    
+    if (!yellowContours.empty()) {
+        cv::Moments m = cv::moments(yellowContours[0]);
+        if (m.m00 != 0) {
+            yellowCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
+            lastYellowCentroid = yellowCentroid;
+        }
     }
 
     // Draw centroids and path center
