@@ -156,7 +156,7 @@ int32_t main(int32_t argc, char **argv)
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
                     std::lock_guard<std::mutex> lck(gsrMutex);
-                    std::cout << "main: groundSteering = " << gsr.groundSteering() << "ts: " << ts_max << std::endl;
+                    std::cout << "main: groundSteering = " << gsr.groundSteering() << "ts: " << ts_ms << std::endl;
                 }
 
                 // Display image on your screen.
