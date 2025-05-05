@@ -42,7 +42,7 @@ const cv::Scalar BLUE_UPPER(120, 255, 253);
 const cv::Scalar YELLOW_LOWER(16, 0, 0);
 const cv::Scalar YELLOW_UPPER(90, 255, 255);
 
-double SCALE_FACTOR = 0.1; // Adjust as needed
+double SCALE_FACTOR = 0.001; // Adjust as needed
 
 int32_t main(int32_t argc, char **argv)
 {
@@ -169,55 +169,48 @@ int32_t main(int32_t argc, char **argv)
     }
     return retCode;
 
-    double processFrame(cv::Mat & img, bool verbose){
+}
 
-        // Convert to HSV color space
-        cv::Mat hsvImage;
-        cv::cvtColor(img, hsvImage, cv::COLOR_BGR2HSV);
+    double processFrame(cv::Mat & img, bool verbose) {
 
-        // Create masks for blue and yellow cones
+            cv::Mat hsvImage;
+            cv::cvtColor(img, hsvImage, cv::COLOR_BGR2HSV);
         cv::Mat blueMask, yellowMask;
-        cv::inRange(hsvImage, BLUE_LOWER, BLUE_UPPER, blueMask);
+            cv::inRange(hsvImage, BLUE_LOWER, BLUE_UPPER, blueMask);
         cv::inRange(hsvImage, YELLOW_LOWER, YELLOW_UPPER, yellowMask);
 
-        // Find contours for blue and yellow cones
         std::vector<std::vector<cv::Point>> blueContours, yellowContours;
-        cv::findContours(blueMask, blueContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+            cv::findContours(blueMask, blueContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
         cv::findContours(yellowMask, yellowContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-        // Calculate centroids for blue and yellow cones
         cv::Point blueCentroid(0, 0), yellowCentroid(0, 0);
-        if (!blueContours.empty())
-        {
+            if (!blueContours.empty())
+            {
             cv::Moments m = cv::moments(blueContours[0]);
             blueCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
         }
         if (!yellowContours.empty())
-        {
+            {
             cv::Moments m = cv::moments(yellowContours[0]);
             yellowCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
         }
 
-        // Draw centroids for debugging
         cv::circle(img, blueCentroid, 5, cv::Scalar(255, 0, 0), -1);
         cv::circle(img, yellowCentroid, 5, cv::Scalar(0, 255, 255), -1);
 
-        // Calculate the center point
         cv::Point pathCenter((blueCentroid.x + yellowCentroid.x) / 2, (blueCentroid.y + yellowCentroid.y) / 2);
-        cv::circle(img, pathCenter, 5, cv::Scalar(0, 255, 0), -1);
+            cv::circle(img, pathCenter, 5, cv::Scalar(0, 255, 0), -1);
 
-        // Calculate the steering angle
         int imageCenterX = img.cols / 2;
-        double steeringAngle = (pathCenter.x - imageCenterX) * SCALE_FACTOR;
+            double steeringAngle = (pathCenter.x - imageCenterX) * SCALE_FACTOR;
 
-        // Debugging output
-        if (verbose)
-        {
+            if (verbose)
+            {
             cv::imshow("Processed Frame", img);
             cv::imshow("Blue Mask", blueMask);
             cv::imshow("Yellow Mask", yellowMask);
         }
 
         return steeringAngle;
-    }
-}
+        }
+
