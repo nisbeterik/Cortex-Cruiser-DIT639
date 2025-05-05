@@ -44,6 +44,9 @@ const cv::Scalar YELLOW_UPPER(90, 255, 255);
 
 double SCALE_FACTOR = 0.001; // Adjust as needed
 
+// Centroids for cones
+static cv::Point lastBlueCentroid(-1,-1), lastYellowCentroid(-1,-1);
+
 int32_t main(int32_t argc, char **argv)
 {
     int32_t retCode{1};
@@ -209,19 +212,17 @@ double processFrame(cv::Mat &img, bool verbose) {
     cv::findContours(blueMask, blueContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
     cv::findContours(yellowMask, yellowContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
+    cv::Point blueCentroid  = lastBlueCentroid;
+    cv::Point yellowCentroid = lastYellowCentroid;
+
     // Find the centroids of the blue and yellow contours
-    cv::Point blueCentroid(0, 0), yellowCentroid(0, 0);
-    if (!blueContours.empty()) {
-        cv::Moments m = cv::moments(blueContours[0]);
-        if (m.m00 != 0) {
-            blueCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
-        }
+    if (!blueContours.empty() && m.m00 != 0) {
+        blueCentroid = cv::Point(m.m10/m.m00, m.m01/m.m00);
+        lastBlueCentroid = blueCentroid;
     }
-    if (!yellowContours.empty()) {
-        cv::Moments m = cv::moments(yellowContours[0]);
-        if (m.m00 != 0) {
-            yellowCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
-        }
+    if (!yellowContours.empty() && m.m00 != 0) {
+        yellowCentroid = cv::Point(m.m10/m.m00, m.m01/m.m00);
+        lastYellowCentroid = yellowCentroid;
     }
 
     // Draw centroids and path center
