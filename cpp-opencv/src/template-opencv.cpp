@@ -89,7 +89,6 @@ int32_t main(int32_t argc, char **argv)
                 std::lock_guard<std::mutex> lck(gsrMutex);
                 gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env));
                 std::cout << "lambda: groundSteering = " << gsr.groundSteering() << std::endl;
-
             };
 
             od4.dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), onGroundSteeringRequest);
@@ -170,49 +169,78 @@ int32_t main(int32_t argc, char **argv)
         retCode = 0;
     }
     return retCode;
-
 }
 
-    double processFrame(cv::Mat & img, bool verbose) {
+cv::Mat createIgnoreMask(cv::Mat &image)
+{
+    // Create a blank mask of the same size as the image
+    cv::Mat ignoreMask = cv::Mat::zeros(image.size(), CV_8UC1);
 
-            cv::Mat hsvImage;
-            cv::cvtColor(img, hsvImage, cv::COLOR_BGR2HSV);
-        cv::Mat blueMask, yellowMask;
-            cv::inRange(hsvImage, BLUE_LOWER, BLUE_UPPER, blueMask);
-        cv::inRange(hsvImage, YELLOW_LOWER, YELLOW_UPPER, yellowMask);
+    // Define the polygon points for the region to ignore (center-bottom part)
+    std::vector<cv::Point> points = {
+        cv::Point(image.cols / 3, image.rows * 2 / 3),     // Bottom-left of the mask
+        cv::Point(image.cols * 2 / 3, image.rows * 2 / 3), // Bottom-right of the mask
+        cv::Point(image.cols, image.rows),                 // Bottom-right corner
+        cv::Point(0, image.rows)                           // Bottom-left corner
+    };
 
-        std::vector<std::vector<cv::Point>> blueContours, yellowContours;
-            cv::findContours(blueMask, blueContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-        cv::findContours(yellowMask, yellowContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    // Fill the polygon in the mask
+    cv::fillPoly(ignoreMask, std::vector<std::vector<cv::Point>>{points}, cv::Scalar(255));
 
-        cv::Point blueCentroid(0, 0), yellowCentroid(0, 0);
-            if (!blueContours.empty())
-            {
-            cv::Moments m = cv::moments(blueContours[0]);
+    return ignoreMask;
+}
+
+double processFrame(cv::Mat &img, bool verbose) {
+    // Convert the image to HSV color space
+    cv::Mat hsvImage;
+    cv::cvtColor(img, hsvImage, cv::COLOR_BGR2HSV);
+
+    // Detect blue and yellow areas
+    cv::Mat blueMask, yellowMask;
+    cv::inRange(hsvImage, BLUE_LOWER, BLUE_UPPER, blueMask);
+    cv::inRange(hsvImage, YELLOW_LOWER, YELLOW_UPPER, yellowMask);
+
+    // Create and apply the ignore mask
+    cv::Mat ignoreMask = createIgnoreMask(img);
+    cv::bitwise_and(yellowMask, ~ignoreMask, yellowMask);
+
+    // Find contours for blue and yellow masks
+    std::vector<std::vector<cv::Point>> blueContours, yellowContours;
+    cv::findContours(blueMask, blueContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    cv::findContours(yellowMask, yellowContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+    // Find the centroids of the blue and yellow contours
+    cv::Point blueCentroid(0, 0), yellowCentroid(0, 0);
+    if (!blueContours.empty()) {
+        cv::Moments m = cv::moments(blueContours[0]);
+        if (m.m00 != 0) {
             blueCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
         }
-        if (!yellowContours.empty())
-            {
-            cv::Moments m = cv::moments(yellowContours[0]);
+    }
+    if (!yellowContours.empty()) {
+        cv::Moments m = cv::moments(yellowContours[0]);
+        if (m.m00 != 0) {
             yellowCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
         }
+    }
 
-        cv::circle(img, blueCentroid, 5, cv::Scalar(255, 0, 0), -1);
-        cv::circle(img, yellowCentroid, 5, cv::Scalar(0, 255, 255), -1);
+    // Draw centroids and path center
+    cv::circle(img, blueCentroid, 5, cv::Scalar(255, 0, 0), -1);
+    cv::circle(img, yellowCentroid, 5, cv::Scalar(0, 255, 255), -1);
 
-        cv::Point pathCenter((blueCentroid.x + yellowCentroid.x) / 2, (blueCentroid.y + yellowCentroid.y) / 2);
-            cv::circle(img, pathCenter, 5, cv::Scalar(0, 255, 0), -1);
+    cv::Point pathCenter((blueCentroid.x + yellowCentroid.x) / 2, (blueCentroid.y + yellowCentroid.y) / 2);
+    cv::circle(img, pathCenter, 5, cv::Scalar(0, 255, 0), -1);
 
-        int imageCenterX = img.cols / 2;
-            double steeringAngle = (pathCenter.x - imageCenterX) * SCALE_FACTOR;
+    // Calculate the steering angle
+    int imageCenterX = img.cols / 2;
+    double steeringAngle = (pathCenter.x - imageCenterX) * SCALE_FACTOR;
 
-            if (verbose)
-            {
-            cv::imshow("Processed Frame", img);
-            cv::imshow("Blue Mask", blueMask);
-            cv::imshow("Yellow Mask", yellowMask);
-        }
+    // Show processed images if verbose
+    if (verbose) {
+        cv::imshow("Processed Frame", img);
+        cv::imshow("Blue Mask", blueMask);
+        cv::imshow("Yellow Mask", yellowMask);
+    }
 
-        return steeringAngle;
-        }
-
+    return steeringAngle;
+}
