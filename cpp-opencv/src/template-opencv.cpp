@@ -39,7 +39,7 @@ double processFrame(cv::Mat &img, bool verbose);
 // HSV ranges for blue and yellow (change values later)
 const cv::Scalar BLUE_LOWER(100, 50, 30);
 const cv::Scalar BLUE_UPPER(120, 255, 253);
-const cv::Scalar YELLOW_LOWER(16, 0, 0);
+const cv::Scalar YELLOW_LOWER(16, 0, 123);
 const cv::Scalar YELLOW_UPPER(90, 255, 255);
 
 // Adjust as needed
