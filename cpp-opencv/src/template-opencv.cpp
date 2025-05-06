@@ -194,7 +194,7 @@ cv::Mat createIgnoreMask(cv::Mat &image)
     cv::fillPoly(ignoreMask, std::vector<std::vector<cv::Point>>{bottomMiddlePoints}, cv::Scalar(255));
 
     // Define the rectangle for the top 60% of the image
-    cv::Rect topPart(0, 0, image.cols, image.rows * 0.6);
+    cv::Rect topPart(0, 0, image.cols, image.rows * 0.55);
 
     // Fill the top part rectangle in the mask
     cv::rectangle(ignoreMask, topPart, cv::Scalar(255), -1);
