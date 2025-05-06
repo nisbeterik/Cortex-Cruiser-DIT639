@@ -55,7 +55,7 @@ int32_t main(int32_t argc, char **argv)
 {
     int32_t retCode{1};
     // Parse the command line parameters as we require the user to specify some mandatory information on startup.
-    std::ofstream computedFile("/container/output/computed_output.csv");
+    std::ofstream computedFile("/host/computed_output.csv");
 
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
     if ((0 == commandlineArguments.count("cid")) ||
