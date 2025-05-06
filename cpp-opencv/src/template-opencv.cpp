@@ -44,7 +44,7 @@ const cv::Scalar YELLOW_UPPER(90, 255, 255);
 
 // Adjust as needed
 double SCALE_FACTOR = 0.001;
-int OFFSET_X = 128;
+int OFFSET_X = 200;
 int OFFSET_Y = 48;
 
 // Centroids for cones
@@ -193,11 +193,11 @@ cv::Mat createIgnoreMask(cv::Mat &image)
     // Fill the bottom-middle polygon in the mask
     cv::fillPoly(ignoreMask, std::vector<std::vector<cv::Point>>{bottomMiddlePoints}, cv::Scalar(255));
 
-    // Define the rectangle for the top 50% of the image
-    cv::Rect topHalf(0, 0, image.cols, image.rows / 2);
+    // Define the rectangle for the top 60% of the image
+    cv::Rect topPart(0, 0, image.cols, image.rows * 0.6);
 
-    // Fill the top half rectangle in the mask
-    cv::rectangle(ignoreMask, topHalf, cv::Scalar(255), -1);
+    // Fill the top part rectangle in the mask
+    cv::rectangle(ignoreMask, topPart, cv::Scalar(255), -1);
 
     return ignoreMask;
 }
