@@ -55,6 +55,8 @@ int32_t main(int32_t argc, char **argv)
 {
     int32_t retCode{1};
     // Parse the command line parameters as we require the user to specify some mandatory information on startup.
+    std::ofstream computedFile("computed_output.csv");
+
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
     if ((0 == commandlineArguments.count("cid")) ||
         (0 == commandlineArguments.count("name")) ||
@@ -79,11 +81,11 @@ int32_t main(int32_t argc, char **argv)
 
         // Attach to the shared memory.
         std::unique_ptr<cluon::SharedMemory> sharedMemory{new cluon::SharedMemory{NAME}};
+
         if (sharedMemory && sharedMemory->valid())
         {
             std::clog << argv[0] << ": Attached to shared memory '" << sharedMemory->name() << " (" << sharedMemory->size() << " bytes)." << std::endl;
             // Open output file for computed steering angle
-            std::ofstream computedFile("computed_output.csv");
             computedFile << "timestamp,computed_angle\n"; // Write CSV header
             // Interface to a running OpenDaVINCI session where network messages are exchanged.
             // The instance od4 allows you to send and receive messages.
