@@ -159,12 +159,8 @@ int32_t main(int32_t argc, char **argv)
                 // Pass the frame to the helper function for processing
                 double steeringAngle = processFrame(img, VERBOSE);
                 std::string direction = (steeringAngle > 0) ? "left" : "right";
-<<<<<<< HEAD
-                    std::cout << "group_06;" << ts_ms << ";" << steeringAngle << std::endl;
-=======
                 std::cout << "group_06; " << ts_ms << ";" << steeringAngle << std::endl;
                 computedFile << ts_ms << "," << steeringAngle << "\n";
->>>>>>> aba0b8ec279b5689bd721d424fe003a1f73be68f
 
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 //                {
