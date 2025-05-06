@@ -264,7 +264,7 @@ double processFrame(cv::Mat &img, bool verbose)
         else
         {
             // Default to a fixed offset from blueCentroid
-            yellowCentroid = blueCentroid + cv::Point2f(OFFSET_X OFFSET_Y); 
+            yellowCentroid = blueCentroid + cv::Point2f(OFFSET_X, OFFSET_Y); 
         }
     }
 
