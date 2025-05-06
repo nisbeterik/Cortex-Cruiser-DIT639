@@ -182,6 +182,12 @@ cv::Mat createIgnoreMask(cv::Mat &image)
     // Create a blank mask of the same size as the image
     cv::Mat ignoreMask = cv::Mat::zeros(image.size(), CV_8UC1);
 
+    // Define the top portio of image
+    int topHeight = image.rows * 0.55;  // 55% of the image height
+
+    // Fill the bottom 45% of the mask (not to be ignored)
+    ignoreMask(cv::Rect(0, topHeight, image.cols, image.rows - topHeight)) = 255;
+
     // Define the polygon points for the region to ignore (center-bottom part)
     std::vector<cv::Point> points = {
         cv::Point(image.cols / 3, image.rows * 2 / 3),     // Bottom-left of the mask
@@ -190,11 +196,12 @@ cv::Mat createIgnoreMask(cv::Mat &image)
         cv::Point(0, image.rows)                           // Bottom-left corner
     };
 
-    // Fill the polygon in the mask
-    cv::fillPoly(ignoreMask, std::vector<std::vector<cv::Point>>{points}, cv::Scalar(255));
+    // Fill the polygon in the mask (this will ignore the specified region)
+    cv::fillPoly(ignoreMask, std::vector<std::vector<cv::Point>>{points}, cv::Scalar(0));
 
     return ignoreMask;
 }
+
 
 double processFrame(cv::Mat &img, bool verbose)
 {
