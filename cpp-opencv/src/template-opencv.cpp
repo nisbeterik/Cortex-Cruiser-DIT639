@@ -44,8 +44,8 @@ const cv::Scalar YELLOW_UPPER(90, 255, 255);
 
 // Adjust as needed
 double SCALE_FACTOR = 0.001;
-double OFFSET_X = 100;
-double OFFSET_Y = 0;
+float OFFSET_X = 100.0f;
+float OFFSET_Y = 0.0f;
 
 // Centroids for cones
 static cv::Point lastBlueCentroid(-1, -1), lastYellowCentroid(-1, -1);
