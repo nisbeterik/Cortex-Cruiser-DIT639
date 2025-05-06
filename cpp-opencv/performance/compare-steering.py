@@ -7,21 +7,18 @@ import numpy as np
 computed_df = pd.read_csv("/Users/martinlidgren/Desktop/dit639/2025-group-06/cpp-opencv/performance/computed_output.csv")
 truth_df = pd.read_csv("/Users/martinlidgren/Desktop/dit639/2025-group-06/cpp-opencv/performance/cleaned_data.csv")
 
-# Rename columns if needed
-if 'ground_truth_angle' not in truth_df.columns:
-    truth_df.columns = ['timestamp', 'ground_truth_angle']
-
-if 'computed_angle' not in computed_df.columns:
-    computed_df.columns = ['timestamp', 'computed_angle']
+# Rename columns if necessary (assuming both files have 'timestamp' and 'groundSteering')
+computed_df.columns = ['timestamp', 'groundSteering']  # Rename in computed data
+truth_df.columns = ['timestamp', 'groundSteering']  # Rename in truth data
 
 # Merge on timestamp
-merged = pd.merge(computed_df, truth_df, on="timestamp")
+merged = pd.merge(computed_df, truth_df, on="timestamp", suffixes=('_computed', '_truth'))
 
 # Compute RMSE
-rmse = np.sqrt(mean_squared_error(merged['ground_truth_angle'], merged['computed_angle']))
+rmse = np.sqrt(mean_squared_error(merged['groundSteering_truth'], merged['groundSteering_computed']))
 
 # Estimate max possible steering angle (adjust if you know the real limit)
-max_steering_angle = max(abs(merged['ground_truth_angle'].max()), abs(merged['ground_truth_angle'].min()))
+max_steering_angle = max(abs(merged['groundSteering_truth'].max()), abs(merged['groundSteering_truth'].min()))
 
 # Compute relative accuracy as a percentage
 accuracy_percent = 100 * (1 - (rmse / max_steering_angle))
@@ -32,8 +29,8 @@ print(f"Accuracy ≈ {accuracy_percent:.2f}%")
 
 # Plot
 plt.figure(figsize=(12, 6))
-plt.plot(merged['timestamp'], merged['ground_truth_angle'], label='Ground Truth', linewidth=2)
-plt.plot(merged['timestamp'], merged['computed_angle'], label='Computed Steering', linestyle='--')
+plt.plot(merged['timestamp'], merged['groundSteering_truth'], label='Ground Truth', linewidth=2)
+plt.plot(merged['timestamp'], merged['groundSteering_computed'], label='Computed Steering', linestyle='--')
 
 plt.xlabel("Timestamp (μs)")
 plt.ylabel("Steering Angle")
@@ -43,7 +40,7 @@ plt.grid(True)
 
 # Watermark with group name
 plt.text(merged['timestamp'].iloc[len(merged)//2],
-         max(merged['ground_truth_angle'].max(), merged['computed_angle'].max()) * 0.95,
+         max(merged['groundSteering_truth'].max(), merged['groundSteering_computed'].max()) * 0.95,
          "group_06", fontsize=14, color='gray', alpha=0.4)
 
 plt.tight_layout()
