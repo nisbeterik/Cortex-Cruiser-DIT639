@@ -5,7 +5,7 @@ import numpy as np
 
 # Load both CSV files
 computed_df = pd.read_csv("/Users/martinlidgren/Desktop/dit639/2025-group-06/cpp-opencv/performance/computed_output.csv")
-truth_df = pd.read_csv("/Users/martinlidgren/Desktop/dit639/2025-group-06/cpp-opencv/performance/comparison.csv")
+truth_df = pd.read_csv("/Users/martinlidgren/Desktop/dit639/2025-group-06/cpp-opencv/performance/cleaned_data.csv")
 
 # Rename columns if needed
 if 'ground_truth_angle' not in truth_df.columns:

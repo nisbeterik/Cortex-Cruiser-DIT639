@@ -1,6 +1,6 @@
 import csv
 
-input_file = "computed_output.csv"
+input_file = "/Users/martinlidgren/Desktop/dit639/2025-group-06/cpp-opencv/performance/comparison.csv"
 output_file = "cleaned_data.csv"
 
 with open(input_file, "r") as infile, open(output_file, "w", newline='') as outfile:
