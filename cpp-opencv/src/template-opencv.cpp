@@ -44,8 +44,8 @@ const cv::Scalar YELLOW_UPPER(90, 255, 255);
 
 // Adjust as needed
 double SCALE_FACTOR = 0.001;
-float OFFSET_X = 100.0f;
-float OFFSET_Y = 0.0f;
+int OFFSET_X = 100.0f;
+int OFFSET_Y = 0.0f;
 
 // Centroids for cones
 static cv::Point lastBlueCentroid(-1, -1), lastYellowCentroid(-1, -1);
@@ -250,7 +250,7 @@ double processFrame(cv::Mat &img, bool verbose)
         else
         {
             // Default to a fixed offset from yellowCentroid
-            blueCentroid = yellowCentroid + cv::Point2f(-OFFSET_X, OFFSET_Y);
+            blueCentroid = yellowCentroid + cv::Point(-OFFSET_X, OFFSET_Y);
         }
     }
 
@@ -264,7 +264,7 @@ double processFrame(cv::Mat &img, bool verbose)
         else
         {
             // Default to a fixed offset from blueCentroid
-            yellowCentroid = blueCentroid + cv::Point2f(OFFSET_X, OFFSET_Y); 
+            yellowCentroid = blueCentroid + cv::Point(OFFSET_X, OFFSET_Y); 
         }
     }
 
