@@ -42,10 +42,13 @@ const cv::Scalar BLUE_UPPER(120, 255, 253);
 const cv::Scalar YELLOW_LOWER(16, 0, 0);
 const cv::Scalar YELLOW_UPPER(90, 255, 255);
 
-double SCALE_FACTOR = 0.001; // Adjust as needed
+// Adjust as needed
+double SCALE_FACTOR = 0.001;
+int OFFSET_X = 100;
+int OFFSET_Y = 0;
 
 // Centroids for cones
-static cv::Point lastBlueCentroid(-1,-1), lastYellowCentroid(-1,-1);
+static cv::Point lastBlueCentroid(-1, -1), lastYellowCentroid(-1, -1);
 
 int32_t main(int32_t argc, char **argv)
 {
@@ -193,7 +196,8 @@ cv::Mat createIgnoreMask(cv::Mat &image)
     return ignoreMask;
 }
 
-double processFrame(cv::Mat &img, bool verbose) {
+double processFrame(cv::Mat &img, bool verbose)
+{
     // Convert the image to HSV color space
     cv::Mat hsvImage;
     cv::cvtColor(img, hsvImage, cv::COLOR_BGR2HSV);
@@ -212,23 +216,55 @@ double processFrame(cv::Mat &img, bool verbose) {
     cv::findContours(blueMask, blueContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
     cv::findContours(yellowMask, yellowContours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-    cv::Point blueCentroid  = lastBlueCentroid;
+    cv::Point blueCentroid = lastBlueCentroid;
     cv::Point yellowCentroid = lastYellowCentroid;
 
     // Find the centroids of the blue and yellow contours
-    if (!blueContours.empty()) {
+    if (!blueContours.empty())
+    {
         cv::Moments m = cv::moments(blueContours[0]);
-        if (m.m00 != 0) {
+        if (m.m00 != 0)
+        {
             blueCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
             lastBlueCentroid = blueCentroid;
         }
     }
-    
-    if (!yellowContours.empty()) {
+
+    if (!yellowContours.empty())
+    {
         cv::Moments m = cv::moments(yellowContours[0]);
-        if (m.m00 != 0) {
+        if (m.m00 != 0)
+        {
             yellowCentroid = cv::Point(m.m10 / m.m00, m.m01 / m.m00);
             lastYellowCentroid = yellowCentroid;
+        }
+    }
+
+    // Fallback is no blue cones are visible
+    if (blueCentroid.x == -1 && blueCentroid.y == -1)
+    {
+        if (lastBlueCentroid.x != -1 && lastBlueCentroid.y != -1)
+        {
+            blueCentroid = lastBlueCentroid; // Use last known position
+        }
+        else
+        {
+            // Default to a fixed offset from yellowCentroid
+            blueCentroid = yellowCentroid + cv::Point2f(-OFFSET_X, OFFSET_Y);
+        }
+    }
+
+    // Fallback is no yellow cones are visible
+    if (yellowCentroid.x == -1 && yellowCentroid.y == -1)
+    {
+        if (lastYellowCentroid.x != -1 && lastYellowCentroid.y != -1)
+        {
+            yellowCentroid = lastYellowCentroid; // Use last known position
+        }
+        else
+        {
+            // Default to a fixed offset from blueCentroid
+            yellowCentroid = blueCentroid + cv::Point2f(OFFSET_X OFFSET_Y); 
         }
     }
 
@@ -244,7 +280,8 @@ double processFrame(cv::Mat &img, bool verbose) {
     double steeringAngle = (pathCenter.x - imageCenterX) * SCALE_FACTOR;
 
     // Show processed images if verbose
-    if (verbose) {
+    if (verbose)
+    {
         cv::imshow("Processed Frame", img);
         cv::imshow("Blue Mask", blueMask);
         cv::imshow("Yellow Mask", yellowMask);
