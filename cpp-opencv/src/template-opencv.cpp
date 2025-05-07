@@ -22,6 +22,7 @@
 // Include the GUI and image processing header files from OpenCV
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <fstream>
 
 // Include more libraries
 #include <chrono>
@@ -54,6 +55,8 @@ int32_t main(int32_t argc, char **argv)
 {
     int32_t retCode{1};
     // Parse the command line parameters as we require the user to specify some mandatory information on startup.
+    std::ofstream computedFile("/host/computed_output.csv");
+
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
     if ((0 == commandlineArguments.count("cid")) ||
         (0 == commandlineArguments.count("name")) ||
@@ -78,10 +81,12 @@ int32_t main(int32_t argc, char **argv)
 
         // Attach to the shared memory.
         std::unique_ptr<cluon::SharedMemory> sharedMemory{new cluon::SharedMemory{NAME}};
+
         if (sharedMemory && sharedMemory->valid())
         {
             std::clog << argv[0] << ": Attached to shared memory '" << sharedMemory->name() << " (" << sharedMemory->size() << " bytes)." << std::endl;
-
+            // Open output file for computed steering angle
+            computedFile << "timestamp,groundSteering,groundTruth\n"; // Write CSV header
             // Interface to a running OpenDaVINCI session where network messages are exchanged.
             // The instance od4 allows you to send and receive messages.
             cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"]))};
@@ -94,7 +99,7 @@ int32_t main(int32_t argc, char **argv)
                 // https://github.com/chrberger/libcluon/blob/master/libcluon/testsuites/TestEnvelopeConverter.cpp#L31-L40
                 std::lock_guard<std::mutex> lck(gsrMutex);
                 gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env));
-                std::cout << "lambda: groundSteering = " << gsr.groundSteering() << std::endl;
+                // std::cout << "lambda: groundSteering = " << gsr.groundSteering() << std::endl;
             };
 
             od4.dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), onGroundSteeringRequest);
@@ -156,12 +161,12 @@ int32_t main(int32_t argc, char **argv)
                 // Pass the frame to the helper function for processing
                 double steeringAngle = processFrame(img, VERBOSE);
                 std::string direction = (steeringAngle > 0) ? "left" : "right";
-                std::cout << "group_06; " << ts_ms << "; " << steeringAngle << direction << std::endl;
+                std::cout << "group_06;" << ts_ms << ";" << -steeringAngle << std::endl;
 
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
                 {
                     std::lock_guard<std::mutex> lck(gsrMutex);
-                    std::cout << "main: groundSteering = " << gsr.groundSteering() << "ts: " << ts_ms << std::endl;
+                    computedFile << ts_ms << "," << -steeringAngle << "," << gsr.groundSteering() << "\n";
                 }
 
                 // Display image on your screen.
@@ -174,6 +179,7 @@ int32_t main(int32_t argc, char **argv)
         }
         retCode = 0;
     }
+    computedFile.close();
     return retCode;
 }
 
