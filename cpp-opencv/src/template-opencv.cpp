@@ -86,7 +86,7 @@ int32_t main(int32_t argc, char **argv)
         {
             std::clog << argv[0] << ": Attached to shared memory '" << sharedMemory->name() << " (" << sharedMemory->size() << " bytes)." << std::endl;
             // Open output file for computed steering angle
-            computedFile << "timestamp,groundSteering\n"; // Write CSV header
+            computedFile << "timestamp,groundSteering,groundTruth\n"; // Write CSV header
             // Interface to a running OpenDaVINCI session where network messages are exchanged.
             // The instance od4 allows you to send and receive messages.
             cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"]))};
@@ -162,13 +162,12 @@ int32_t main(int32_t argc, char **argv)
                 double steeringAngle = processFrame(img, VERBOSE);
                 std::string direction = (steeringAngle > 0) ? "left" : "right";
                 std::cout << "group_06;" << ts_ms << ";" << steeringAngle << std::endl;
-                computedFile << ts_ms << "," << steeringAngle << "\n";
 
                 // If you want to access the latest received ground steering, don't forget to lock the mutex:
-                //                {
-                //                std::lock_guard<std::mutex> lck(gsrMutex);
-                //                  std::cout << "main: groundSteering = " << gsr.groundSteering() << "ts: " << ts_ms << std::endl;
-                //               }
+                {
+                    std::lock_guard<std::mutex> lck(gsrMutex);
+                    computedFile << ts_ms << "," << steeringAngle << "," << gsr.groundSteering() << "\n";
+                }
 
                 // Display image on your screen.
                 if (VERBOSE)
