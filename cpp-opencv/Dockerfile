@@ -14,8 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # First stage for building the software:
-FROM ubuntu:18.04 as builder
-MAINTAINER Christian Berger "christian.berger@gu.se"
+FROM ubuntu:18.04 AS builder
+LABEL Christian Berger "christian.berger@gu.se"
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -34,7 +34,8 @@ RUN apt-get install -y --no-install-recommends \
 # Include this source tree and compile the sources
 ADD . /opt/sources
 WORKDIR /opt/sources
-RUN mkdir build && \
+RUN rm -rf build && \
+    mkdir build && \
     cd build && \
     cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/tmp .. && \
     make && make install
