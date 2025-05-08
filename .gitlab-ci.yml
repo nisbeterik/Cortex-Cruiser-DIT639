@@ -14,10 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Which Docker image shall be used on the GitLab runner?
-image:
-  name: docker:24.0.2
-  platform: linux/arm64
-
+image: docker:24.0.2@sha256:<arm64_digest>
 
 # Details about how to connect to the Docker service to run this build.
 variables:
@@ -27,7 +24,6 @@ variables:
 
 services:
  - name: docker:24.0.2-dind
- - platform: linux/arm64
 
 stages:
   - build
