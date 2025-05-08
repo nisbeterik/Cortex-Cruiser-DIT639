@@ -40,13 +40,13 @@ before_script:
 # This section describes what shall be done to build and test the project.
 build:
   tags:
-    - docker-build
+    - docker-group06
   stage: build
   script:
     - cd cpp-opencv/
     - build:
   tags:
-    - docker-build
+    - docker-group6
   stage: build
   script:
     - cd cpp-opencv/
@@ -58,7 +58,7 @@ build:
 
 test-coverage:
   tags:
-    - docker-build
+    - docker-group6
   image: ubuntu:18.04
   stage: test
   before_script: []  
