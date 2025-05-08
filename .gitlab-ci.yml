@@ -18,7 +18,7 @@ image: docker:24.0.2
 
 # Details about how to connect to the Docker service to run this build.
 variables:
-  DOCKER_HOST: tcp://localhost:2375
+  DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
   semver_pattern: '/^v([0-9]+)\.([0-9]+)\.([0-9]+)?$/'
 
