@@ -43,9 +43,17 @@ build:
   stage: build
   script:
     - cd cpp-opencv/
-    - docker buildx create --use
-    - docker buildx inspect --bootstrap
-    - docker buildx build --platform linux/amd64,linux/arm64 -t test-image --push .
+    - build:
+  tags:
+    - docker-build
+  stage: build
+  script:
+    - cd cpp-opencv/
+    - docker buildx create --name builder
+    - docker buildx use builder
+    - docker buildx inspect builder --bootstrap
+    - docker buildx build --platform linux/amd64,linux/arm64 -t "$CI_REGISTRY_IMAGE:latest" --push .
+
 
 test-coverage:
   tags:
@@ -86,6 +94,7 @@ release:
       when: always
   script:
    - cd cpp-opencv/
-   - docker buildx create --use
-   - docker buildx inspect --bootstrap
-   - docker buildx build --platform linux/amd64,linux/arm64 -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG" -t "$CI_REGISTRY_IMAGE:latest" --push .
+   - docker buildx create --name builder
+   - docker buildx use builder
+   - docker buildx inspect builder --bootstrap
+   - docker buildx build --platform linux/amd64,linux/arm64 -t "$CI_REGISTRY_IMAGE:latest" --push .
