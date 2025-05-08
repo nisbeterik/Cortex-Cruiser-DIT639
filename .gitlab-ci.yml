@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Which Docker image shall be used on the GitLab runner?
-image: docker:24.0.2
+image: arm64v8/docker:24.0.2
 
 # Details about how to connect to the Docker service to run this build.
 variables:
@@ -23,7 +23,7 @@ variables:
   semver_pattern: '/^v([0-9]+)\.([0-9]+)\.([0-9]+)?$/'
 
 services:
- - name: docker:24.0.2-dind
+ - name: arm64v8/docker:24.0.2-dind
 
 stages:
   - build
