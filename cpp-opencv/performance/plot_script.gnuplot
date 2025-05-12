@@ -16,20 +16,10 @@ set datafile separator ","
 set datafile missing "NaN" # Handle any missing data gracefully
 set key autotitle columnhead # Use column headers as legend titles
 
+# Adjust x-axis label format
+set xtics rotate by -45 # Rotate x-axis labels by 45 degrees counterclockwise
+set format x "%.0f" # Display x-axis values as integers
+
 # Skip the header row by starting plotting from the second line
 plot 'computed_output.csv' every ::1 using 1:2 with lines title "Ground Steering" lc rgb "red", \
      'computed_output.csv' every ::1 using 1:3 with lines title "Ground Truth" lc rgb "blue"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
