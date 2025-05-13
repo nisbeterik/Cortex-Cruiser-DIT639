@@ -34,7 +34,8 @@ int32_t main(int32_t argc, char **argv) {
 
 
     std::cout << "Recording contains " << player.totalNumberOfEnvelopesInRecFile() << " messages" << std::endl;
-
+    opendlv::proxy::GroundSteeringRequest gsr;
+    opendlv::proxy::ImageReading ir;
     while (player.hasMoreData()) {
         auto next = player.getNextEnvelopeToBeReplayed();
         if (next.first) {
@@ -43,9 +44,16 @@ int32_t main(int32_t argc, char **argv) {
             if (verbose) {
                 cluon::data::TimeStamp ts = envelope.sampleTimeStamp();
                 int64_t ts_ms = cluon::time::toMicroseconds(ts);
-                std::cout << "Received envelope with ID: " << envelope.dataType()
-                          << " at " << ts_ms 
-                          << std::endl;
+
+                std::cout << "Received envelope with ID: " << envelope.dataType() << " at " << ts_ms << std::endl;
+                if(envelope.dataType() == 1055) {
+                    ir = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env)); 
+                    std::cout << "ir" << ir << std::endl;
+                } else if (envelop.dataType() == 1090) {
+                    
+                    gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env));
+                    std::cout << "gsr" << gsr << std::endl;
+                }
             }
         }
     }
