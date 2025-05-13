@@ -2,7 +2,6 @@
 #include "opendlv-standard-message-set.hpp"
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/imgcodecs.hpp>
 #include <fstream>
 #include <chrono>
 #include <ctime>
@@ -59,14 +58,6 @@ int32_t main(int32_t argc, char **argv) {
                     ts = envelope.sampleTimeStamp();
                     ts_ms = cluon::time::toMicroseconds(ts); // take timestamp
                     ir = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope));
-                    std::vector<uchar> buffer(ir.data().begin(), ir.data().end());
-                    image = cv::imdecode(buffer, cv::IMREAD_COLOR);
-    
-                    if(!image.empty()) {
-                    if (verbose) {
-                        std::cout << "Image decoded: " << image.cols << "x" << image.rows 
-                        << " channels: " << image.channels() << std::endl;
-                    }
                     hasImage = true;
                     } else {
                         std::cerr << "Failed to decode image!" << std::endl;
