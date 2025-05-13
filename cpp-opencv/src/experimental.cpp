@@ -29,8 +29,7 @@ int32_t main(int32_t argc, char **argv) {
 
     cluon::Player player(recFile);
 
-    std::cout << "Recording contains " << player.totalNumberOfEnvelopes() << " messages" << std::endl;
-    std::cout << "Duration: " << player.totalLengthInMicroseconds() / 1000000.0 << " seconds" << std::endl;
+    std::cout << "Recording contains " << player.totalNumberOfEnvelopesInRecFile() << " messages" << std::endl;
 
     while (player.hasMoreData()) {
         auto next = player.getNextEnvelopeToBeReplayed();
