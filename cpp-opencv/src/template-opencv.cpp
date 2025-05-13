@@ -112,7 +112,7 @@ int main(int argc, char **argv)
             // Process the frame to calculate the steering angle
             // double steeringAngle = processFrame(frame);
             // computedFile << timestamp << "," << steeringAngle << "," << groundTruth << "\n";
-            computedFile << timestamp << "," << groundTruth << "\n";
+            computedFile << frameTimeStamp << "," << currentFrameData.groundSteeringRequest << "\n";
 
             // Reset for the next frame
             currentFrameData.groundSteeringRequest.reset();
