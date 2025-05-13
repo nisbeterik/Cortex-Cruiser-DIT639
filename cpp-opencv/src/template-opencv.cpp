@@ -67,36 +67,38 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    std::ofstream computedFile("/host/computed_output.csv");  // Where output will be put
+    // std::ofstream computedFile("/host/computed_output.csv");  // Where output will be put
     // computedFile << "timestamp,groundSteering,groundTruth\n"; // Write CSV headers
-    computedFile << "timestamp,groundTruth\n";
 
     std::string recFile = argv[1];
 
     // Open replay session
-    cluon::OD4Session replaySession{recFile};
-    replaySession.timeTravelEnabled(true);
+    cluon::OD4Session od4{recFile};
 
     FrameData currentFrameData;
     cluon::data::TimeStamp frameTimestamp;
 
+    opendlv::proxy::GroundSteeringRequest gsr;
+    opendlv::proxy::ImageReading imgr;
+
     // Handle GroundSteeringRequest
-    replaySession.dataTrigger<opendlv::proxy::GroundSteeringRequest>(
-        [&currentFrameData](cluon::data::Envelope &&envelope)
-        {
-            currentFrameData.groundSteeringRequest =
-                cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(envelope);
-        });
+    auto onGroundSteering = [](cluon::data::Envelope &&env){
+        gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env));
+        std::cout << "groundSteering = " << gsr.groundSteering() << std::endl;    
+    };
 
     // Handle ImageReading
-    replaySession.dataTrigger<opendlv::proxy::ImageReading>(
-        [&currentFrameData](cluon::data::Envelope &&envelope)
-        {
-            currentFrameData.imageReading =
-                cluon::extractMessage<opendlv::proxy::ImageReading>(envelope);
-        });
+    auto onImageReading = [](cluon::data::Envelope &&env){
+        imgr = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(env));
+        std::cout << "image = " << imgr.ImageReading() << std::endl;    
+    };
 
-    while (replaySession.getNextFrame())
+    // Make sure new envelope can be received
+    od4.dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), onGroundSteeringRequest);
+    od4.dataTrigger(opendlv::proxy::ImageReading::ID(), onImageReading);
+
+
+    while (od4.isRunning())
     {
         // Get the timestamp of the current frame
         frameTimestamp = replaySession.time();
@@ -107,12 +109,11 @@ int main(int argc, char **argv)
             std::out << currentFrameData.groundSteeringRequest << std::endl;
 
             // TODO: Decode image reading into a frame to be used for processFrame
-        
-
             // Process the frame to calculate the steering angle
             // double steeringAngle = processFrame(frame);
+
+            // Write to file
             // computedFile << timestamp << "," << steeringAngle << "," << groundTruth << "\n";
-            computedFile << frameTimeStamp << "," << currentFrameData.groundSteeringRequest << "\n";
 
             // Reset for the next frame
             currentFrameData.groundSteeringRequest.reset();
@@ -120,7 +121,7 @@ int main(int argc, char **argv)
         }
     }
 
-    computedFile.close();
+    // computedFile.close();
     return 0;
 }
 
