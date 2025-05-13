@@ -64,7 +64,7 @@ int32_t main(int32_t argc, char **argv) {
                     if(hasImage) {
                         gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(envelope));
                         std::cout << "group_06;" << ts_ms << ";" << gsr.groundSteering() << ";" << ir.width() << std::endl;
-                        // lineCount++;
+                        lineCount++;
                         hasImage = false;
                     }
                 }
