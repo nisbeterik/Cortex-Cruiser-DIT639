@@ -58,12 +58,18 @@ int32_t main(int32_t argc, char **argv) {
                     ts = envelope.sampleTimeStamp();
                     ts_ms = cluon::time::toMicroseconds(ts); // take timestamp
                     ir = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope));
-                    cv::Mat wrapped(ir.height(), ir.width(), CV_8UC4, ir.data()); // extract message into ir var
-                    image = wrapped.clone();
+                    std::vector<uchar> buffer(ir.data().begin(), ir.data().end());
+                    image = cv::imdecode(buffer, cv::IMREAD_COLOR);
+    
                     if(!image.empty()) {
-                        std::cout << "success" << std::endl;
+                    if (verbose) {
+                        std::cout << "Image decoded: " << image.cols << "x" << image.rows 
+                        << " channels: " << image.channels() << std::endl;
                     }
                     hasImage = true;
+                    } else {
+                        std::cerr << "Failed to decode image!" << std::endl;
+                    }
                 } else if (envelope.dataType() == 1090) { // if datatype is GroundSteeringRequest (see: opendlv-standard-message-set)
                     // if corresponding image exists with timestamp
                     if(hasImage) {
