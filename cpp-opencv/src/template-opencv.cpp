@@ -52,12 +52,6 @@ int OFFSET_Y = 48;
 // Centroids for cones
 static cv::Point lastBlueCentroid(-1, -1), lastYellowCentroid(-1, -1);
 
-struct FrameData
-{
-    std::optional<opendlv::proxy::GroundSteeringRequest> groundSteeringRequest;
-    std::optional<opendlv::proxy::ImageReading> imageReading;
-};
-
 #ifdef REC_PROCESSING
 int main(int argc, char **argv)
 {
@@ -75,9 +69,8 @@ int main(int argc, char **argv)
     // Open replay session
     cluon::OD4Session od4{recFile};
 
-    FrameData currentFrameData;
+    // Variables for frame data
     cluon::data::TimeStamp frameTimestamp;
-
     opendlv::proxy::GroundSteeringRequest gsr;
     opendlv::proxy::ImageReading imgr;
 
@@ -101,13 +94,11 @@ int main(int argc, char **argv)
     while (od4.isRunning())
     {
         // Get the timestamp of the current frame
-        frameTimestamp = replaySession.time();
+        frameTimestamp = od4.time();
 
         // Process messages if both are available
-        if (currentFrameData.groundSteeringRequest && currentFrameData.imageReading)
+        if (imgr)
         {
-            std::out << currentFrameData.groundSteeringRequest << std::endl;
-
             // TODO: Decode image reading into a frame to be used for processFrame
             // Process the frame to calculate the steering angle
             // double steeringAngle = processFrame(frame);
@@ -115,9 +106,6 @@ int main(int argc, char **argv)
             // Write to file
             // computedFile << timestamp << "," << steeringAngle << "," << groundTruth << "\n";
 
-            // Reset for the next frame
-            currentFrameData.groundSteeringRequest.reset();
-            currentFrameData.imageReading.reset();
         }
     }
 
