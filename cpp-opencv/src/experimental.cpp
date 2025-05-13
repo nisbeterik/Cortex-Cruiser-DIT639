@@ -36,11 +36,10 @@ int32_t main(int32_t argc, char **argv) {
     std::cout << "Recording contains " << player.totalNumberOfEnvelopesInRecFile() << " messages" << std::endl;
     opendlv::proxy::GroundSteeringRequest gsr;
     opendlv::proxy::ImageReading ir;
-    std::optional<opendlv::proxy::ImageReading> latestImage;
     cluon::data::TimeStamp ts;
     int64_t ts_ms;
     int32_t lineCount = 0;
-
+    bool hasImage = false;
     while (player.hasMoreData()) {
         auto next = player.getNextEnvelopeToBeReplayed();
         if (next.first) {
@@ -49,17 +48,19 @@ int32_t main(int32_t argc, char **argv) {
             if (verbose) {
                
 
-                std::cout << "Received envelope with ID: " << envelope.dataType() << " at " << ts_ms << std::endl;
+                // std::cout << "Received envelope with ID: " << envelope.dataType() << " at " << ts_ms << std::endl;
                 if(envelope.dataType() == 1055) {
                     ts = envelope.sampleTimeStamp();
                     ts_ms = cluon::time::toMicroseconds(ts);
                     ir = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope)); 
+                    hasImage = true;
                     // std::cout << "ir width " << ir.width() << std::endl; // should be ir.data()
                 } else if (envelope.dataType() == 1090) {
-                    if(latestImage) {
+                    if(hasImage) {
                         gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(envelope));
                         std::cout << "group_06;" << ts_ms << ";" << gsr.groundSteering() << ";" << ir.width() << std::endl;
                         lineCount++;
+                        hasImage = false;
                     }
                 }
             }
