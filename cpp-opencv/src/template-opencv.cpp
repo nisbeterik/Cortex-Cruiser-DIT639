@@ -53,63 +53,68 @@ int OFFSET_Y = 48;
 static cv::Point lastBlueCentroid(-1, -1), lastYellowCentroid(-1, -1);
 
 #ifdef REC_PROCESSING
-int main(int argc, char **argv)
-{
-    if (argc != 2)
-    {
-        std::cerr << "Usage: " << argv[0] << " <file.rec>" << std::endl;
+// booleans for Player parameters
+constexpr const bool AUTOREWIND{false};
+constexpr const bool THREADING{false};
+
+int32_t main(int32_t argc, char **argv) {
+    auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
+
+    // parse recording file path in arguments and --verbose flag
+    if (commandlineArguments.count("rec") == 0) {
+        std::cerr << argv[0] << " requires a recording file to process." << std::endl;
+        std::cerr << "Usage:   " << argv[0] << " --rec=<Recording.rec> [--verbose]" << std::endl;
+        std::cerr << "Example: " << argv[0] << " --rec=myRecording.rec" << std::endl;
         return 1;
     }
 
-    // std::ofstream computedFile("/host/computed_output.csv");  // Where output will be put
-    // computedFile << "timestamp,groundSteering,groundTruth\n"; // Write CSV headers
+    const std::string recFile = commandlineArguments["rec"]; 
+    bool verbose = (commandlineArguments.count("verbose") != 0);
 
-    std::string recFile = argv[1];
+    if (verbose) {
+        std::cout << "Processing recording file: " << recFile << std::endl;
+    }
 
-    // Open replay session
-    cluon::OD4Session od4{recFile};
-
-    // Variables for frame data
-    cluon::data::TimeStamp frameTimestamp;
-    opendlv::proxy::GroundSteeringRequest gsr;
-    opendlv::proxy::ImageReading imgr;
-
-    // Handle GroundSteeringRequest
-    auto onGroundSteering = [](cluon::data::Envelope &&env){
-        gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env));
-        std::cout << "groundSteering = " << gsr.groundSteering() << std::endl;    
-    };
-
-    // Handle ImageReading
-    auto onImageReading = [](cluon::data::Envelope &&env){
-        imgr = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(env));
-        std::cout << "image = " << imgr.ImageReading() << std::endl;    
-    };
-
-    // Make sure new envelope can be received
-    od4.dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), onGroundSteeringRequest);
-    od4.dataTrigger(opendlv::proxy::ImageReading::ID(), onImageReading);
+    cluon::Player player(recFile, AUTOREWIND, THREADING); // pass recording file and other parameters to Player object
 
 
-    while (od4.isRunning())
-    {
-        // Get the timestamp of the current frame
-        frameTimestamp = od4.time();
+    opendlv::proxy::GroundSteeringRequest gsr; // variable to store gsr message
+    opendlv::proxy::ImageReading ir; // variable to store imagereading message
+    cluon::data::TimeStamp ts; // TimeStamp object to store timestamp
+    int64_t ts_ms; // variable to store timestamp in millieseconds
+    int32_t lineCount = 0; // line count to make the number of prints matches number of groundsteering messages
+    bool hasImage = false; // variable to keep track if image frame has equivalent gsr data
+    cv::Mat image;
 
-        // Process messages if both are available
-        if (imgr)
-        {
-            // TODO: Decode image reading into a frame to be used for processFrame
-            // Process the frame to calculate the steering angle
-            // double steeringAngle = processFrame(frame);
+    // loop that ends when .rec file has no more data
 
-            // Write to file
-            // computedFile << timestamp << "," << steeringAngle << "," << groundTruth << "\n";
+    while (player.hasMoreData()) {
+        auto next = player.getNextEnvelopeToBeReplayed(); // get next envelope of .rec file
+        if (next.first) {
+            cluon::data::Envelope envelope = next.second; // store current envelope
+            
+            if (verbose) {
 
+                // if datatype is ImageReading (see opendlv-standard-message-set)
+                if(envelope.dataType() == 1055) {
+                    ts = envelope.sampleTimeStamp();
+                    ts_ms = cluon::time::toMicroseconds(ts); // take timestamp
+                    ir = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope));
+                    hasImage = true;
+                } else if (envelope.dataType() == 1090) { // if datatype is GroundSteeringRequest (see: opendlv-standard-message-set)
+                    // if corresponding image exists with timestamp
+                    if(hasImage) {
+                        gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(envelope));
+                        std::cout << "group_06;" << ts_ms << ";" << gsr.groundSteering() << ";" << ir.fourcc() << std::endl;
+                        lineCount++;
+                        hasImage = false;
+                    }
+                }
+            }
         }
     }
 
-    // computedFile.close();
+    std::cout << "Linecount = " << lineCount << std::endl;
     return 0;
 }
 
