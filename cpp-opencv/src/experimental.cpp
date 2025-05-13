@@ -42,7 +42,7 @@ int32_t main(int32_t argc, char **argv) {
     int64_t ts_ms; // variable to store timestamp in millieseconds
     int32_t lineCount = 0; // line count to make the number of prints matches number of groundsteering messages
     bool hasImage = false; // variable to keep track if image frame has equivalent gsr data
-    
+    cv::Mat image;
 
     // loop that ends when .rec file has no more data
 
@@ -58,6 +58,7 @@ int32_t main(int32_t argc, char **argv) {
                     ts = envelope.sampleTimeStamp();
                     ts_ms = cluon::time::toMicroseconds(ts); // take timestamp
                     ir = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope)); // extract message into ir var
+                    image = base64ToMat(ir.data());
                     hasImage = true;
                 } else if (envelope.dataType() == 1090) { // if datatype is GroundSteeringRequest (see: opendlv-standard-message-set)
                     // if corresponding image exists with timestamp
@@ -74,4 +75,14 @@ int32_t main(int32_t argc, char **argv) {
 
     std::cout << "Linecount = " << lineCount << std::endl;
     return 0;
+}
+
+cv::Mat base64ToMat(const std::string& base64Data) {
+    std::string decoded = cluon::base64Decode(base64Data);
+    std::vector<char> data(decoded.begin(), decoded.end());
+    cv::Mat img = cv::imdecode(data, cv::IMREAD_UNCHANGED);
+    if (img.channels() == 3) {
+        cv::cvtColor(img, img, cv::COLOR_BGR2BGRA);
+    }
+    return img;
 }
