@@ -10,10 +10,12 @@
 #include <string>
 #include <iomanip>
 
-int32_t main(int32_t argc, char **argv) {
+int32_t main(int32_t argc, char **argv)
+{
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
-    
-    if (commandlineArguments.count("rec") == 0) {
+
+    if (commandlineArguments.count("rec") == 0)
+    {
         std::cerr << argv[0] << " requires a recording file to process." << std::endl;
         std::cerr << "Usage:   " << argv[0] << " --rec=<Recording.rec> [--verbose]" << std::endl;
         std::cerr << "Example: " << argv[0] << " --rec=myRecording.rec" << std::endl;
@@ -23,7 +25,8 @@ int32_t main(int32_t argc, char **argv) {
     const std::string recFile = commandlineArguments["rec"];
     bool verbose = (commandlineArguments.count("verbose") != 0);
 
-    if (verbose) {
+    if (verbose)
+    {
         std::cout << "Processing recording file: " << recFile << std::endl;
     }
 
@@ -32,16 +35,16 @@ int32_t main(int32_t argc, char **argv) {
     std::cout << "Recording contains " << player.numberOfEnvelopes() << " messages" << std::endl;
     std::cout << "Duration: " << player.totalLength() << " seconds" << std::endl;
 
-    while (player.hasMoreData()) {
+    while (player.hasMoreData())
+    {
         auto next = player.getNextEnvelopeToBeReplayed();
-        if (next.first) {
-            cluon::data::Envelope envelope = next.second;
-            
-            if (verbose) {
-                std::cout << "Received envelope with ID: " << envelope.dataType() 
-                          << " at " << envelope.sampleTimeStamp() << std::endl;
-            }
-            
+
+        if (verbose)
+        {
+            cluon::data::TimeStamp ts = envelope.sampleTimeStamp();
+            std::cout << "Received envelope with ID: " << envelope.dataType()
+                      << " at " << ts.seconds() << "." << std::setfill('0') << std::setw(6) << ts.microseconds()
+                      << std::endl;
         }
     }
 
