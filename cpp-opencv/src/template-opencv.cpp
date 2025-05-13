@@ -170,11 +170,11 @@ int32_t main(int32_t argc, char **argv)
                 }
 
                 // Display image on your screen.
-                //if (VERBOSE)
-                // {
-                    // cv::imshow(sharedMemory->name().c_str(), img);
-                    // cv::waitKey(1);
-               // }
+                if (VERBOSE)
+                 {
+                     cv::imshow(sharedMemory->name().c_str(), img);
+                     cv::waitKey(1);
+                }
             }
         }
         retCode = 0;
@@ -376,11 +376,11 @@ double processFrame(cv::Mat &img, bool verbose)
     cv::line(img, bottomCenter, pathCenter, cv::Scalar(0, 0, 255), 2);
 
     // Show processed images if verbose
-    /* if (verbose) {
+     if (verbose) {
         cv::imshow("Processed Frame", img);
         cv::imshow("Blue Mask", blueMask);
         cv::imshow("Yellow Mask", yellowMask);
-    }*/
+    }
 
     return steeringAngle;
 }
