@@ -34,6 +34,7 @@
 
 // Declaration of method for processing image and calcualting steering
 double processFrame(cv::Mat &img, bool verbose);
+cv::Mat createIgnoreMask(cv::Mat &image);
 
 // GLOBAL VARIABLES
 
@@ -51,6 +52,39 @@ int OFFSET_Y = 48;
 // Centroids for cones
 static cv::Point lastBlueCentroid(-1, -1), lastYellowCentroid(-1, -1);
 
+#ifdef REC_PROCESSING
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <file.rec>" << std::endl;
+        return 1;
+    }
+
+    std::string recFile = argv[1];
+    cluon::OD4Session replaySession{recFile};
+
+    replaySession.timeTravelEnabled(true);
+
+    // Iterate over each frame in the .rec file
+    while (true) {
+        // Fetch the next data frame
+        auto frame = replaySession.getNextFrame();
+        if (!frame) {
+            break; // End of file
+        }
+
+        // Extract timestamp and raw payload
+        uint32_t messageId = frame->messageID();
+        uint64_t timestamp = frame->timestamp();
+        std::string rawPayload = frame->data();
+
+        std::cout << "Message ID: " << messageId << ", Timestamp: " << timestamp << std::endl;;
+    }
+
+    return 0;
+}
+
+
+#else
 int32_t main(int32_t argc, char **argv)
 {
     int32_t retCode{1};
@@ -182,6 +216,7 @@ int32_t main(int32_t argc, char **argv)
     computedFile.close();
     return retCode;
 }
+#endif
 
 cv::Mat createIgnoreMask(cv::Mat &image)
 {
