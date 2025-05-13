@@ -57,8 +57,12 @@ int32_t main(int32_t argc, char **argv) {
                 if(envelope.dataType() == 1055) {
                     ts = envelope.sampleTimeStamp();
                     ts_ms = cluon::time::toMicroseconds(ts); // take timestamp
-                    ir = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope)); // extract message into ir var
-                    image = base64ToMat(ir.data());
+                    ir = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope));
+                    cv::Mat wrapped(ir.height(), ir.width(), CV_8UC4, ir.data()); // extract message into ir var
+                    image = wrapped.clone();
+                    if(!image.empty()) {
+                        std::cout << "success" << std::endl;
+                    }
                     hasImage = true;
                 } else if (envelope.dataType() == 1090) { // if datatype is GroundSteeringRequest (see: opendlv-standard-message-set)
                     // if corresponding image exists with timestamp
@@ -77,12 +81,3 @@ int32_t main(int32_t argc, char **argv) {
     return 0;
 }
 
-cv::Mat base64ToMat(const std::string& base64Data) {
-    std::string decoded = cluon::base64Decode(base64Data);
-    std::vector<char> data(decoded.begin(), decoded.end());
-    cv::Mat img = cv::imdecode(data, cv::IMREAD_UNCHANGED);
-    if (img.channels() == 3) {
-        cv::cvtColor(img, img, cv::COLOR_BGR2BGRA);
-    }
-    return img;
-}
