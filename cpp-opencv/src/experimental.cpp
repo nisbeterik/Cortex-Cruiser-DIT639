@@ -52,7 +52,7 @@ int32_t main(int32_t argc, char **argv) {
                 std::cout << "Received envelope with ID: " << envelope.dataType() << " at " << ts_ms << std::endl;
                 if(envelope.dataType() == 1055) {
                     ts = envelope.sampleTimeStamp();
-                    ts_ms = cluon::time::toMicroseconds(ts)
+                    ts_ms = cluon::time::toMicroseconds(ts);
                     ir = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope)); 
                     // std::cout << "ir width " << ir.width() << std::endl; // should be ir.data()
                 } else if (envelope.dataType() == 1090) {
