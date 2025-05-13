@@ -63,7 +63,7 @@ int32_t main(int32_t argc, char **argv) {
                     // if corresponding image exists with timestamp
                     if(hasImage) {
                         gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(envelope));
-                        std::cout << "group_06;" << ts_ms << ";" << gsr.groundSteering() << ";" << ir.width() << std::endl;
+                        std::cout << "group_06;" << ts_ms << ";" << gsr.groundSteering() << ";" << ir.fourcc() << std::endl;
                         lineCount++;
                         hasImage = false;
                     }
