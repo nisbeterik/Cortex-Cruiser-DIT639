@@ -47,11 +47,11 @@ int32_t main(int32_t argc, char **argv) {
 
                 std::cout << "Received envelope with ID: " << envelope.dataType() << " at " << ts_ms << std::endl;
                 if(envelope.dataType() == 1055) {
-                    ir = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env)); 
+                    ir = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(envelope)); 
                     std::cout << "ir width " << ir.width() << std::endl;
                 } else if (envelop.dataType() == 1090) {
                     
-                    gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env));
+                    gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(envelope));
                     std::cout << "gsr " << gsr.groundSteering() << std::endl;
                 }
             }
