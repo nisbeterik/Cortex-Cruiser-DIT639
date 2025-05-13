@@ -59,9 +59,6 @@ int32_t main(int32_t argc, char **argv) {
                     ts_ms = cluon::time::toMicroseconds(ts); // take timestamp
                     ir = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope));
                     hasImage = true;
-                    } else {
-                        std::cerr << "Failed to decode image!" << std::endl;
-                    }
                 } else if (envelope.dataType() == 1090) { // if datatype is GroundSteeringRequest (see: opendlv-standard-message-set)
                     // if corresponding image exists with timestamp
                     if(hasImage) {
