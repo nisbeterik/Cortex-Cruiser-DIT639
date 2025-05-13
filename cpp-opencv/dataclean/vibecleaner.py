@@ -44,7 +44,7 @@ for img_time, img_data, width, height in image_readings:
 # Write output CSV
 with open("./cleaned-data/merged_output.csv", "w", newline='') as f:
     writer = csv.writer(f)
-    writer.writerow(['timestamp', 'image_base64', 'width', 'height', 'groundSteering'])
+    writer.writerow(['timestamp', 'image_base64', 'width', 'height', 'groundTruth'])
     writer.writerows(matched_rows)
 
 print("✅ Merged CSV created with width and height: ./cleaned-data/merged_output.csv")
