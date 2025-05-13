@@ -42,8 +42,9 @@ int32_t main(int32_t argc, char **argv) {
             
             if (verbose) {
                 cluon::data::TimeStamp ts = envelope.sampleTimeStamp();
+                int64_t ts_ms = cluon::time::toMicroseconds(ts);
                 std::cout << "Received envelope with ID: " << envelope.dataType()
-                          << " at " << ts.seconds() << "." << std::setfill('0') << std::setw(6) << ts.microseconds()
+                          << " at " << ts_ms 
                           << std::endl;
             }
         }
