@@ -10,6 +10,9 @@
 #include <string>
 #include <iomanip>
 
+constexpr const bool AUTOREWIND{false};
+constexpr const bool THREADING{false};
+
 int32_t main(int32_t argc, char **argv) {
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
 
@@ -27,7 +30,8 @@ int32_t main(int32_t argc, char **argv) {
         std::cout << "Processing recording file: " << recFile << std::endl;
     }
 
-    cluon::Player player(recFile);
+    cluon::Player player(recFile, AUTOREWIND, THREADING);
+
 
     std::cout << "Recording contains " << player.totalNumberOfEnvelopesInRecFile() << " messages" << std::endl;
 
