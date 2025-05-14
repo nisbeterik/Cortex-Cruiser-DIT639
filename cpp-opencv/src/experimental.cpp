@@ -397,12 +397,12 @@ cv::Mat createIgnoreMask(cv::Mat & image)
         cv::line(img, bottomCenter, pathCenter, cv::Scalar(0, 0, 255), 2);
 
         // Show processed images if verbose
-        if (verbose)
-        {
-            cv::imshow("Processed Frame", img);
-            cv::imshow("Blue Mask", blueMask);
-            cv::imshow("Yellow Mask", yellowMask);
-        }
+       // if (verbose)
+        //{
+          //  cv::imshow("Processed Frame", img);
+        //cv::imshow("Blue Mask", blueMask);
+        //    cv::imshow("Yellow Mask", yellowMask);
+        // }
 
         return -steeringAngle;
     }
