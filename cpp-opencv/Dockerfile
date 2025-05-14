@@ -21,29 +21,30 @@ RUN apt-get update && apt-get upgrade -y && \
       wget \
       libopencv-dev \
       libopencv-highgui-dev \
-      libopencv-imgproc-dev
+      libopencv-imgproc-dev \
+      pkg-config
 
 # Force clang to be the default cc/c++
-RUN ln -sf /usr/bin/clang /usr/bin/cc && \
-    ln -sf /usr/bin/clang++ /usr/bin/c++
+RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 && \
+    update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 100
 
-# Ensure that libyuv is installed correctly
+# Install OpenH264 properly with headers and libraries
+RUN mkdir -p /tmp/src && \
+    cd /tmp/src && \
+    git clone --depth 1 --branch v2.3.1 https://github.com/cisco/openh264.git && \
+    cd openh264 && \
+    make -j$(nproc) && \
+    make install
+
+# Install libyuv
 RUN mkdir -p /tmp/src && \
     cd /tmp/src && \
     git clone https://chromium.googlesource.com/libyuv/libyuv && \
     cd libyuv && \
-    rm -rf build && mkdir build && cd build && \
-    cmake .. && \
-    make && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr .. && \
+    make -j$(nproc) && \
     make install
-
-# Ensure OpenH264 is correctly linked with libyuv
-RUN mkdir -p /tmp/src && \
-    cd /tmp/src && \
-    git clone --depth 1 --branch v2.2.0 https://github.com/cisco/openh264.git && \
-    cd openh264 && \
-    make PREFIX=/tmp -j$(nproc) && \
-    make install PREFIX=/tmp
 
 # Copy source & build your app
 COPY . /opt/sources
@@ -52,14 +53,10 @@ RUN mkdir build && cd build && \
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/tmp \
+      -DCMAKE_PREFIX_PATH=/usr/local \
       ../ && \
     make -j$(nproc) && \
     make install
-
-# Download the OpenH264 .so (if you need the .so in /tmp)
-RUN cd /tmp && \
-    wget -q http://ciscobinary.openh264.org/libopenh264-2.2.0-linux64.6.so.bz2 && \
-    mv libopenh264-2.2.0-linux64.6.so.bz2 libopenh264.so.6.bz2
 
 # Final image
 FROM ubuntu:22.04
@@ -73,15 +70,15 @@ RUN apt-get update && apt-get upgrade -y && \
       libopencv-highgui4.5 \
       libopencv-imgproc4.5 \
       libstdc++6 \
-      libopenh264-dev
+      libgomp1
 
-# Copy libyuv static lib if needed (for static linking)
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libyuv.a /usr/lib/x86_64-linux-gnu/
+# Copy OpenH264 libraries
+COPY --from=builder /usr/local/lib/libopenh264.so* /usr/lib/
 
-# Copy the OpenH264 .so
-COPY --from=builder /usr/lib/libopenh264.so* /usr/lib/
+# Copy libyuv libraries
+COPY --from=builder /usr/lib/libyuv.so* /usr/lib/
 
-# Copy your app executable (the project name is "experimental")
+# Copy your app executable
 COPY --from=builder /tmp/bin/experimental /usr/bin/experimental
 
 # Update linker cache
