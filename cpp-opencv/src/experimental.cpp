@@ -9,7 +9,25 @@
 #include <sstream>
 #include <string>
 #include <iomanip>
+
 #include <libyuv.h>
+#include <wels/codec_api.h>
+
+// GLOBAL VARIABLES
+
+// HSV ranges for blue and yellow (change values later)
+const cv::Scalar BLUE_LOWER(81, 102, 40);
+const cv::Scalar BLUE_UPPER(148, 255, 123);
+const cv::Scalar YELLOW_LOWER(16, 0, 123);
+const cv::Scalar YELLOW_UPPER(90, 255, 255);
+
+// Adjust as needed
+double SCALE_FACTOR = 0.001;
+int OFFSET_X = 200;
+int OFFSET_Y = 48;
+
+// Centroids for cones
+static cv::Point lastBlueCentroid(-1, -1), lastYellowCentroid(-1, -1);
 
 
 // Declaration of method for processing image and calcualting steering
@@ -46,11 +64,29 @@ int32_t main(int32_t argc, char **argv)
     opendlv::proxy::GroundSteeringRequest gsr; // variable to store gsr message
     opendlv::proxy::ImageReading img;           // variable to store imagereading message
     cluon::data::TimeStamp ts;                 // TimeStamp object to store timestamp
-    double calculatedSteering cs;              // The steering calculated using our algorithm
+    double calculatedSteering;              // The steering calculated using our algorithm
     int64_t ts_ms;                             // variable to store timestamp in millieseconds
     int32_t lineCount = 0;                     // line count to make the number of prints matches number of groundsteering messages
     bool hasImage = false;                     // variable to keep track if image frame has equivalent gsr data
-    cv::Mat image;
+
+    // Initialize the decoder
+    ISVCDecoder* decoder = nullptr;
+    WelsCreateDecoder(&decoder);
+    if (!decoder) {
+        std::cerr << "Failed to create decoder" << std::endl;
+        return 1;
+    }
+
+    SDecodingParam decoding_param;
+    memset(&decoding_param, 0, sizeof(SDecodingParam));
+    decoding_param.eEcActiveIdc = ERROR_CON_DISABLE;
+    decoding_param.bParseOnly = false;
+    decoding_param.sVideoProperty.eVideoBsType = VIDEO_BITSTREAM_DEFAULT;
+
+    if (cmResultSuccess != decoder->Initialize(&decoding_param)) {
+        std::cerr << "Failed to initialize decoder" << std::endl;
+        return 1;
+    }
 
     // loop that ends when .rec file has no more data
 
@@ -111,7 +147,7 @@ int32_t main(int32_t argc, char **argv)
                                 );
 
                                 // Process frame to calculate steering
-                                cs = processFrame(bgrImage, verbose);
+                                calculatedSteering = processFrame(bgrImage, verbose);
                             }
                         }
                     }
@@ -122,7 +158,7 @@ int32_t main(int32_t argc, char **argv)
                     if (hasImage)
                     {
                         gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(envelope));
-                        std::cout << "group_06;" << ts_ms << ";" << gsr.groundSteering() << ";" << cs << std::endl;
+                        std::cout << "group_06;" << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << std::endl;
                         lineCount++;
                         hasImage = false;
                     }
