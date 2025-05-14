@@ -1,62 +1,89 @@
-# Copyright (C) 2020  Christian Berger
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Build stage
+FROM ubuntu:22.04 AS builder
+LABEL maintainer="Christian Berger <christian.berger@gu.se>"
 
-# First stage for building the software:
-FROM ubuntu:18.04 AS builder
-LABEL Christian Berger "christian.berger@gu.se"
+ENV DEBIAN_FRONTEND=noninteractive
 
-ENV DEBIAN_FRONTEND noninteractive
+# Install necessary dependencies
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+      ca-certificates \
+      cmake \
+      make \
+      linux-headers-generic \
+      git \
+      libx11-dev \
+      nasm \
+      clang \
+      g++ \
+      gcc \
+      build-essential \
+      wget \
+      libopencv-dev \
+      libopencv-highgui-dev \
+      libopencv-imgproc-dev
 
-# Upgrade the Ubuntu 18.04 LTS base image
-RUN apt-get update -y && \
-    apt-get upgrade -y && \
-    apt-get dist-upgrade -y
+# Force clang to be the default cc/c++
+RUN ln -sf /usr/bin/clang /usr/bin/cc && \
+    ln -sf /usr/bin/clang++ /usr/bin/c++
 
-# Install the development libraries for OpenCV
-RUN apt-get install -y --no-install-recommends \
-        ca-certificates \
-        cmake \
-        build-essential \
-        libopencv-dev
+# Ensure that libyuv is installed correctly
+RUN mkdir -p /tmp/src && \
+    cd /tmp/src && \
+    git clone https://chromium.googlesource.com/libyuv/libyuv && \
+    cd libyuv && \
+    rm -rf build && mkdir build && cd build && \
+    cmake .. && \
+    make && \
+    make install
 
-# Include this source tree and compile the sources
-ADD . /opt/sources
+# Ensure OpenH264 is correctly linked with libyuv
+RUN mkdir -p /tmp/src && \
+    cd /tmp/src && \
+    git clone --depth 1 --branch v2.2.0 https://github.com/cisco/openh264.git && \
+    cd openh264 && \
+    make PREFIX=/tmp -j$(nproc) && \
+    make install PREFIX=/tmp
+
+# Copy source & build your app
+COPY . /opt/sources
 WORKDIR /opt/sources
-RUN rm -rf build && \
-    mkdir build && \
-    cd build && \
-    cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/tmp .. && \
-    make && make install
+RUN mkdir build && cd build && \
+    cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/tmp \
+      ../ && \
+    make -j$(nproc) && \
+    make install
 
+# Download the OpenH264 .so (if you need the .so in /tmp)
+RUN cd /tmp && \
+    wget -q http://ciscobinary.openh264.org/libopenh264-2.2.0-linux64.6.so.bz2 && \
+    mv libopenh264-2.2.0-linux64.6.so.bz2 libopenh264.so.6.bz2
 
-# Second stage for packaging the software into a software bundle:
-FROM ubuntu:18.04
-MAINTAINER Christian Berger "christian.berger@gu.se"
+# Final image
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
 
-ENV DEBIAN_FRONTEND noninteractive
+# Runtime deps
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+      libx11-6 \
+      libopencv-core4.5 \
+      libopencv-highgui4.5 \
+      libopencv-imgproc4.5 \
+      libstdc++6
 
-RUN apt-get update -y && \
-    apt-get upgrade -y && \
-    apt-get dist-upgrade -y
+# Copy libyuv static lib if needed (for static linking)
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libyuv.a /usr/lib/x86_64-linux-gnu/
 
-RUN apt-get install -y --no-install-recommends \
-        libopencv-core3.2 \
-        libopencv-highgui3.2 \
-        libopencv-imgproc3.2 
+# Copy the OpenH264 .so
+COPY --from=builder /usr/lib/libopenh264.so* /usr/lib/
 
-WORKDIR /usr/bin
-COPY --from=builder /tmp/bin/experimental .
-# This is the entrypoint when starting the Docker container; hence, this Docker image is automatically starting our software on its creation
+# Copy your app executable (the project name is "experimental")
+COPY --from=builder /tmp/bin/experimental /usr/bin/experimental
+
+# Update linker cache
+RUN ldconfig
+
 ENTRYPOINT ["/usr/bin/experimental"]
