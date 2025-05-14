@@ -72,7 +72,8 @@ RUN apt-get update && apt-get upgrade -y && \
       libopencv-core4.5 \
       libopencv-highgui4.5 \
       libopencv-imgproc4.5 \
-      libstdc++6
+      libstdc++6 \
+      libopenh264-dev
 
 # Copy libyuv static lib if needed (for static linking)
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libyuv.a /usr/lib/x86_64-linux-gnu/
