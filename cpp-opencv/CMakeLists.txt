@@ -107,9 +107,16 @@ find_package(OpenCV REQUIRED core highgui imgproc)
 include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
 set(LIBRARIES ${LIBRARIES} ${OpenCV_LIBS})
 
-################################################################################
-# Create executable.
-add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}.cpp)
+# Add necessary flags for OpenH264
+set(LIBRARIES ${LIBRARIES} yuv)
+set(LIBRARIES ${LIBRARIES} openh264)
+
+# Include OpenH264 and LibYUV headers
+include_directories(SYSTEM /usr/include)
+include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
+
+# Create executable
+add_executable(${PROJECT_NAME} src/${PROJECT_NAME}.cpp)
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
 # Add dependency to OpenDLV Standard Message Set.
