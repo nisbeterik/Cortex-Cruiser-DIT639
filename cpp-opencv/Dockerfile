@@ -69,6 +69,8 @@ RUN apt-get update && apt-get upgrade -y && \
       libopencv-core4.5 \
       libopencv-highgui4.5 \
       libopencv-imgproc4.5 \
+      libopencv-videoio4.5 \  
+      libopencv-imgcodecs4.5 \
       libstdc++6 \
       libgomp1
 
