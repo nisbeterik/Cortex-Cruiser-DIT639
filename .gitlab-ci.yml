@@ -44,13 +44,6 @@ build:
     - docker-build
   stage: build
   script:
-    - cd cpp-opencv/
-    - build:
-  tags:
-    - docker-build
-  stage: build
-  script:
-    - cd cpp-opencv/
     - docker buildx create --name builder
     - docker buildx use builder
     - docker buildx inspect builder --bootstrap

@@ -47,7 +47,13 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Only install runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Fix GPG key issues and install dependencies
+RUN rm -f /etc/apt/sources.list.d/* && \
+    apt-get clean && \
+    apt-get update -oAcquire::AllowInsecureRepositories=true && \
+    apt-get install -y --allow-unauthenticated debian-archive-keyring && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
     libx11-6 \
     libopencv-core4.5 \
     libopencv-highgui4.5 \
