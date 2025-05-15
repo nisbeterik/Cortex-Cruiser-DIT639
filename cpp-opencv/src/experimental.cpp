@@ -26,12 +26,16 @@ double SCALE_FACTOR = 0.001;
 int OFFSET_X = 200;
 int OFFSET_Y = 48;
 
+// THRESHOLD
+float THRESHOLD = 0.09;
+
 // Centroids for cones
 static cv::Point lastBlueCentroid(-1, -1), lastYellowCentroid(-1, -1);
 
 // Declaration of method for processing image and calcualting steering
 double processFrame(cv::Mat &img, bool verbose);
 cv::Mat createIgnoreMask(cv::Mat &image);
+// float abs(float x);
 
 // booleans for Player parameters
 constexpr const bool AUTOREWIND{false};
@@ -66,7 +70,10 @@ int32_t main(int32_t argc, char **argv)
     double calculatedSteering;                 // The steering calculated using our algorithm
     int64_t ts_ms;                             // variable to store timestamp in millieseconds
     int32_t lineCount = 0;                     // line count to make the number of prints matches number of groundsteering messages
+    int failures = 0;                          // counts frames that failed to decode / process
     bool hasAngle = false;                     // variable to keep track if image frame has equivalent gsr data
+    int totalValid = 0;                        // Amount of valid ground truth values
+    int withinRange = 0;                       // Amount of calculated steering angles within range
 
     // Initialize the decoder
     ISVCDecoder *decoder = nullptr;
@@ -108,7 +115,7 @@ int32_t main(int32_t argc, char **argv)
                     {
                         img = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope));
 
-                        // Note: The following segment is code taken from, but appropriated from here ->
+                        // Note: The following segment is code taken, but appropriated, from here ->
                         // https://github.com/chalmers-revere/opendlv-video-h264-decoder/blob/master/src/opendlv-video-h264-decoder.cpp
 
                         // Check if the image encoding is H264.
@@ -130,6 +137,7 @@ int32_t main(int32_t argc, char **argv)
                             if (0 != decoder->DecodeFrame2(reinterpret_cast<const unsigned char *>(data.c_str()), LEN, yuvData, &bufferInfo))
                             {
                                 std::cerr << "H264 decoding for current frame failed." << std::endl;
+                                failures++;
                             }
                             else
                             {
@@ -148,6 +156,15 @@ int32_t main(int32_t argc, char **argv)
 
                                     // Process frame to calculate steering
                                     calculatedSteering = processFrame(bgrImage, verbose);
+
+                                    // Determine difference between calculated and truth values, unless gsr is 0
+                                    if (gsr.groundSteering() != 0)
+                                    {
+                                        totalValid++;
+                                        if (std::abs(calculatedSteering - gsr.groundSteering()) <= THRESHOLD){
+                                            withinRange++;
+                                        }
+                                    }
 
                                     // Print output
                                     std::cout << lineCount << ";" << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << std::endl;
@@ -172,7 +189,14 @@ int32_t main(int32_t argc, char **argv)
         }
     }
 
-    std::cout << "Linecount = " << lineCount << std::endl;
+    if (totalValid > 0){
+        double percentage = ((double)withinRange / totalValid) * 100.0;
+        std::cout << "Accuracy = " << percentage << "%" << std::endl;
+        std::cout << "Total Valid: " << totalValid << std::endl;
+        std::cout << "Within Range: " << withinRange << std::endl;
+        std::cout << "Failures: " << failures << std::endl;
+    }
+
     return 0;
 }
 
@@ -411,3 +435,17 @@ double processFrame(cv::Mat &img, bool verbose)
 
     return -steeringAngle;
 }
+
+/*
+float abs(float x)
+{
+    if (x >= 0)
+    {
+        return x;
+    }
+    else
+    {
+        return -x;
+    }
+}
+    */
