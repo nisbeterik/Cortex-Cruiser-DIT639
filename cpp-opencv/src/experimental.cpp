@@ -35,7 +35,6 @@ static cv::Point lastBlueCentroid(-1, -1), lastYellowCentroid(-1, -1);
 // Declaration of method for processing image and calcualting steering
 double processFrame(cv::Mat &img, bool verbose);
 cv::Mat createIgnoreMask(cv::Mat &image);
-// float abs(float x);
 
 // booleans for Player parameters
 constexpr const bool AUTOREWIND{false};
@@ -56,11 +55,6 @@ int32_t main(int32_t argc, char **argv)
 
     const std::string recFile = commandlineArguments["rec"];
     bool verbose = (commandlineArguments.count("verbose") != 0);
-
-    if (verbose)
-    {
-        std::cout << "Processing recording file: " << recFile << std::endl;
-    }
 
     cluon::Player player(recFile, AUTOREWIND, THREADING); // pass recording file and other parameters to Player object
 
@@ -105,72 +99,69 @@ int32_t main(int32_t argc, char **argv)
         {
             cluon::data::Envelope envelope = next.second; // store current envelope
 
-            if (verbose)
+            // if datatype is ImageReading (see opendlv-standard-message-set)
+            if (envelope.dataType() == 1055)
             {
-
-                // if datatype is ImageReading (see opendlv-standard-message-set)
-                if (envelope.dataType() == 1055)
+                if (hasAngle)
                 {
-                    if (hasAngle)
+                    img = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope));
+
+                    // Note: The following segment is code taken, but appropriated, from here ->
+                    // https://github.com/chalmers-revere/opendlv-video-h264-decoder/blob/master/src/opendlv-video-h264-decoder.cpp
+
+                    // Check if the image encoding is H264.
+                    if ("h264" == img.fourcc())
                     {
-                        img = cluon::extractMessage<opendlv::proxy::ImageReading>(std::move(envelope));
+                        const uint32_t WIDTH = img.width();
+                        const uint32_t HEIGHT = img.height();
 
-                        // Note: The following segment is code taken, but appropriated, from here ->
-                        // https://github.com/chalmers-revere/opendlv-video-h264-decoder/blob/master/src/opendlv-video-h264-decoder.cpp
+                        // Prepare the buffer for decoding.
+                        uint8_t *yuvData[3]; // Pointers to Y, U, and V planes.
+                        SBufferInfo bufferInfo;
+                        memset(&bufferInfo, 0, sizeof(SBufferInfo));
 
-                        // Check if the image encoding is H264.
-                        if ("h264" == img.fourcc())
+                        // Retrieve the H264 data from the message.
+                        std::string data{img.data()};
+                        const uint32_t LEN = static_cast<uint32_t>(data.size());
+
+                        // Decode the H264 frame.
+                        if (0 != decoder->DecodeFrame2(reinterpret_cast<const unsigned char *>(data.c_str()), LEN, yuvData, &bufferInfo))
                         {
-                            const uint32_t WIDTH = img.width();
-                            const uint32_t HEIGHT = img.height();
-
-                            // Prepare the buffer for decoding.
-                            uint8_t *yuvData[3]; // Pointers to Y, U, and V planes.
-                            SBufferInfo bufferInfo;
-                            memset(&bufferInfo, 0, sizeof(SBufferInfo));
-
-                            // Retrieve the H264 data from the message.
-                            std::string data{img.data()};
-                            const uint32_t LEN = static_cast<uint32_t>(data.size());
-
-                            // Decode the H264 frame.
-                            if (0 != decoder->DecodeFrame2(reinterpret_cast<const unsigned char *>(data.c_str()), LEN, yuvData, &bufferInfo))
+                            std::cerr << "H264 decoding for current frame failed." << std::endl;
+                            failures++;
+                        }
+                        else
+                        {
+                            // If the decoding is successful and the buffer is valid.
+                            if (1 == bufferInfo.iBufferStatus)
                             {
-                                std::cerr << "H264 decoding for current frame failed." << std::endl;
-                                failures++;
-                            }
-                            else
-                            {
-                                // If the decoding is successful and the buffer is valid.
-                                if (1 == bufferInfo.iBufferStatus)
+                                // Convert the YUV data to a cv::Mat in BGR format.
+                                cv::Mat bgrImage(HEIGHT, WIDTH, CV_8UC3);
+                                libyuv::I420ToRGB24(
+                                    yuvData[0], bufferInfo.UsrData.sSystemBuffer.iStride[0], // Y plane.
+                                    yuvData[1], bufferInfo.UsrData.sSystemBuffer.iStride[1], // U plane.
+                                    yuvData[2], bufferInfo.UsrData.sSystemBuffer.iStride[1], // V plane.
+                                    bgrImage.data, WIDTH * 3,                                // Destination (BGR format).
+                                    WIDTH, HEIGHT                                            // Dimensions.
+                                );
+
+                                // Process frame to calculate steering
+                                calculatedSteering = processFrame(bgrImage, verbose);
+
+                                // Determine difference between calculated and truth values, unless gsr is 0
+                                if (gsr.groundSteering() != 0)
                                 {
-                                    // Convert the YUV data to a cv::Mat in BGR format.
-                                    cv::Mat bgrImage(HEIGHT, WIDTH, CV_8UC3);
-                                    libyuv::I420ToRGB24(
-                                        yuvData[0], bufferInfo.UsrData.sSystemBuffer.iStride[0], // Y plane.
-                                        yuvData[1], bufferInfo.UsrData.sSystemBuffer.iStride[1], // U plane.
-                                        yuvData[2], bufferInfo.UsrData.sSystemBuffer.iStride[1], // V plane.
-                                        bgrImage.data, WIDTH * 3,                                // Destination (BGR format).
-                                        WIDTH, HEIGHT                                            // Dimensions.
-                                    );
-
-                                    // Process frame to calculate steering
-                                    calculatedSteering = processFrame(bgrImage, verbose);
-
-                                    // Determine difference between calculated and truth values, unless gsr is 0
-                                    if (gsr.groundSteering() != 0)
+                                    totalValid++;
+                                    if (std::abs(calculatedSteering - gsr.groundSteering()) <= THRESHOLD)
                                     {
-                                        totalValid++;
-                                        if (std::abs(calculatedSteering - gsr.groundSteering()) <= THRESHOLD){
-                                            withinRange++;
-                                        }
+                                        withinRange++;
                                     }
-
-                                    // Print output
-                                    std::cout << lineCount << ";" << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << std::endl;
-                                    lineCount++;
-                                    hasAngle = false;
                                 }
+
+                                // Print output
+                                std::cout << lineCount << ";" << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << std::endl;
+                                lineCount++;
+                                hasAngle = false;
                             }
                         }
                     }
@@ -189,7 +180,8 @@ int32_t main(int32_t argc, char **argv)
         }
     }
 
-    if (totalValid > 0){
+    if (totalValid > 0)
+    {
         double percentage = ((double)withinRange / totalValid) * 100.0;
         std::cout << "Accuracy = " << percentage << "%" << std::endl;
         std::cout << "Total Valid: " << totalValid << std::endl;
@@ -435,17 +427,3 @@ double processFrame(cv::Mat &img, bool verbose)
 
     return -steeringAngle;
 }
-
-/*
-float abs(float x)
-{
-    if (x >= 0)
-    {
-        return x;
-    }
-    else
-    {
-        return -x;
-    }
-}
-    */
