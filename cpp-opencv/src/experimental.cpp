@@ -127,7 +127,6 @@ int32_t main(int32_t argc, char **argv)
                         // Decode the H264 frame.
                         if (0 != decoder->DecodeFrame2(reinterpret_cast<const unsigned char *>(data.c_str()), LEN, yuvData, &bufferInfo))
                         {
-                            std::cerr << "H264 decoding for current frame failed." << std::endl;
                             failures++;
                         }
                         else
