@@ -1,29 +1,26 @@
+
 # Build stage
-FROM ubuntu:20.04 AS builder
-
+FROM ubuntu:22.04 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Install build dependencies
+# Install only essential build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     cmake \
     make \
     git \
     wget \
-    bzip2 \
     nasm \
     g++ \
     libopencv-dev \
     libopencv-highgui-dev \
     libopencv-imgproc-dev
-
-# Install OpenH264 v2.3.1 (provides libopenh264.so.6)
-RUN wget https://github.com/cisco/openh264/releases/download/v2.3.1/libopenh264-2.3.1-linux-arm64.so.bz2 && \
-    bunzip2 libopenh264-2.3.1-linux-arm64.so.bz2 && \
-    mv libopenh264-2.3.1-linux-arm64.so /usr/lib/libopenh264.so.6 && \
-    chmod +x /usr/lib/libopenh264.so.6 && \
-    ldconfig
-
+# Install OpenH264
+RUN mkdir -p /tmp/src && \
+    cd /tmp/src && \
+    git clone --depth 1 --branch v2.3.1 https://github.com/cisco/openh264.git && \
+    cd openh264 && \
+    make -j$(nproc) && \
+    make install
 # Install libyuv
 RUN mkdir -p /tmp/src && \
     cd /tmp/src && \
@@ -33,7 +30,6 @@ RUN mkdir -p /tmp/src && \
     cmake -DCMAKE_INSTALL_PREFIX=/usr .. && \
     make -j$(nproc) && \
     make install
-
 # Build application
 COPY . /opt/sources
 WORKDIR /opt/sources
@@ -41,31 +37,30 @@ RUN mkdir build && cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp .. && \
     make -j$(nproc) && \
     make install
-
 # Final image
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Install runtime dependencies
-RUN apt-get update && \
+# Only install runtime dependencies
+# Fix GPG key issues and install dependencies
+RUN rm -f /etc/apt/sources.list.d/* && \
+    apt-get clean && \
+    apt-get update -oAcquire::AllowInsecureRepositories=true && \
+    apt-get install -y --allow-unauthenticated debian-archive-keyring && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
     libx11-6 \
-    libopencv-core4.2 \
-    libopencv-highgui4.2 \
-    libopencv-imgproc4.2 \
-    libopencv-videoio4.2 \
-    libopencv-imgcodecs4.2 \
+    libopencv-core4.5 \
+    libopencv-highgui4.5 \
+    libopencv-imgproc4.5 \
+    libopencv-videoio4.5 \
+    libopencv-imgcodecs4.5 \
     libstdc++6 \
-    libgomp1 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy OpenH264 library
-COPY --from=builder /usr/lib/libopenh264.so.6 /usr/lib/
+    libgomp1 && \
+    rm -rf /var/lib/apt/lists/*
+# Copy libraries
+COPY --from=builder /usr/local/lib/libopenh264.so* /usr/lib/
 COPY --from=builder /usr/lib/libyuv.so* /usr/lib/
-
 # Copy application
 COPY --from=builder /tmp/bin/experimental /usr/bin/
-
 RUN ldconfig
-
 ENTRYPOINT ["/usr/bin/experimental"]
