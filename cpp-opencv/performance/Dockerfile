@@ -2,9 +2,19 @@
 FROM ubuntu:22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates gnupg2 && \
+
+RUN rm -f /etc/apt/sources.list.d/* && \
+    apt-get clean && \
+    apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true && \
+    apt-get install -y --allow-unauthenticated debian-archive-keyring ubuntu-keyring && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    gnupg2 \
+    software-properties-common && \
     rm -rf /var/lib/apt/lists/*
 
 # Install only essential build dependencies
