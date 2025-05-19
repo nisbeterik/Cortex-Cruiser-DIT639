@@ -1,5 +1,5 @@
 RECORDING_DIR="cpp-opencv/performance/automation"
-RECORDING_FILE="CID-140-recording-2020-03-18_150001-selection-selection.rec"
+RECORDING_FILE="CID-140-recording-2020-03-18_150001-selection.rec"
 
 # Check if the recording file exists
 if [ ! -f "${RECORDING_DIR}/${RECORDING_FILE}" ]; then
