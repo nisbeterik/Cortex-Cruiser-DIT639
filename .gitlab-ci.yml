@@ -45,6 +45,7 @@ performance:
   tags:
     - docker-group6
   stage: performance
+  image: ubuntu:20.04
   script:
     - cd cpp-opencv/performance
     - docker build -t "performance:latest" .
