@@ -3,11 +3,6 @@ FROM ubuntu:22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install and fix keyring
-RUN rm -f /etc/apt/trusted.gpg.d/ubuntu-keyring-*.gpg && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends ubuntu-keyring
-
 # Install only essential build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
