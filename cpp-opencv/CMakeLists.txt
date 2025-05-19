@@ -90,6 +90,11 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp
 include_directories(SYSTEM ${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+# Include header files
+set(HEADER_FILES 
+    src/steering.hpp
+)
+
 ################################################################################
 # Gather all object code first to avoid double compilation.
 set(LIBRARIES Threads::Threads)
@@ -108,8 +113,13 @@ include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
 set(LIBRARIES ${LIBRARIES} ${OpenCV_LIBS})
 
 ################################################################################
-# Create executable.
-add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}.cpp)
+# Create executable
+add_executable(${PROJECT_NAME}
+    src/${PROJECT_NAME}.cpp
+    src/steering.cpp
+    ${HEADER_FILES}
+)
+
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
 # Add dependency to OpenDLV Standard Message Set.
