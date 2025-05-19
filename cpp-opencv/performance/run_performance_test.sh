@@ -6,17 +6,9 @@ if [ ! -d "${RECORDING_DIR}" ]; then
   exit 1
 fi
 
-# Get all .rec files
-rec_files=("${RECORDING_DIR}"/*.rec)
-
-# Check if any .rec files exist
-if [ ${#rec_files[@]} -eq 0 ]; then
-  echo "Error: No .rec files found in ${RECORDING_DIR}"
-  exit 1
-fi
-
-# Process each file one by one
-for rec_file in "${rec_files[@]}"; do
+# Process each .rec file
+for rec_file in "${RECORDING_DIR}"/*.rec; do
+  [ -e "$rec_file" ] || continue  
   filename=$(basename "${rec_file}")
   echo "Processing recording file: ${filename}"
   
@@ -26,7 +18,6 @@ for rec_file in "${rec_files[@]}"; do
     --rec="/data/${filename}" \
     --verbose
   
-  # Check if the last command succeeded
   if [ $? -ne 0 ]; then
     echo "Error processing ${filename}"
     exit 1
