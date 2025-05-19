@@ -3,19 +3,9 @@ FROM ubuntu:22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# First fix the GPG key issues
-RUN rm -f /etc/apt/sources.list.d/* && \
-    apt-get clean && \
-    apt-get update -o Acquire::AllowInsecureRepositories=true && \
-    apt-get install -y --allow-unauthenticated \
-        ca-certificates \
-        gnupg2 \
-        ubuntu-keyring && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C && \
-    rm -rf /var/lib/apt/lists/*
-
-# Now install build dependencies with proper keys
+# Install only essential build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     cmake \
     make \
     git \
@@ -24,15 +14,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     libopencv-dev \
     libopencv-highgui-dev \
-    libopencv-imgproc-dev && \
-    rm -rf /var/lib/apt/lists/*
+    libopencv-imgproc-dev
 
 # Install OpenH264
 RUN mkdir -p /tmp/src && \
     cd /tmp/src && \
     git clone --depth 1 --branch v2.3.1 https://github.com/cisco/openh264.git && \
     cd openh264 && \
-    make CXXFLAGS="-O1 -DNDEBUG" -j2 && \
+    make CXXFLAGS="-O2 -DNDEBUG" -j2 && \
     make install
 
 # Install libyuv
@@ -57,18 +46,13 @@ RUN mkdir build && cd build && \
 FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Fix GPG key issues first
+# Only install runtime dependencies
+# Fix GPG key issues and install dependencies
 RUN rm -f /etc/apt/sources.list.d/* && \
     apt-get clean && \
-    apt-get update -o Acquire::AllowInsecureRepositories=true && \
-    apt-get install -y --allow-unauthenticated \
-        ca-certificates \
-        ubuntu-keyring && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install runtime dependencies
-RUN apt-get update && \
+    apt-get update -oAcquire::AllowInsecureRepositories=true && \
+    apt-get install -y --allow-unauthenticated debian-archive-keyring && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
     libx11-6 \
     libopencv-core4.5 \
