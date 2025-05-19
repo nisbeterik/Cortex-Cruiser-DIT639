@@ -45,10 +45,17 @@ performance:
   tags:
     - docker-group6
   stage: performance
-  image: ubuntu:20.04
+  image: docker:24.0.2
+  services:
+    - docker:24.0.2-dind
+  before_script:
+    - docker info
   script:
     - cd cpp-opencv/performance
-    - docker build -t "performance:latest" .
+    - docker build \
+        --build-arg DEBIAN_FRONTEND=noninteractive \
+        -t "performance:latest" .
+    - docker run --rm performance:latest
 
 
 # This section describes what shall be done to build and test the project.
