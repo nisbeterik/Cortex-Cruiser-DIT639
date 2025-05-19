@@ -1,4 +1,5 @@
 
+
 # Build stage
 FROM ubuntu:22.04 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
@@ -19,7 +20,7 @@ RUN mkdir -p /tmp/src && \
     cd /tmp/src && \
     git clone --depth 1 --branch v2.3.1 https://github.com/cisco/openh264.git && \
     cd openh264 && \
-    make -j$(nproc) && \
+    make -j2 && \
     make install
 # Install libyuv
 RUN mkdir -p /tmp/src && \
