@@ -3,6 +3,12 @@ FROM ubuntu:22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Set system time to avoid "InRelease is not valid yet" error
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends tzdata && \
+    ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
+
 # Install only essential build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -45,6 +51,12 @@ RUN mkdir build && cd build && \
 # Final image
 FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Set system time to fix future timestamps
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends tzdata && \
+    ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
 
 # Only install runtime dependencies
 # Fix GPG key issues and install dependencies
