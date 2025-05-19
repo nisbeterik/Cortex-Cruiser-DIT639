@@ -21,7 +21,7 @@ RUN mkdir -p /tmp/src && \
     cd /tmp/src && \
     git clone --depth 1 --branch v2.3.1 https://github.com/cisco/openh264.git && \
     cd openh264 && \
-    make -j2 && \
+    make CXXFLAGS="-O2 -DNDEBUG" -j2 && \
     make install
 
 # Install libyuv
