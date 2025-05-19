@@ -19,6 +19,7 @@ RUN mkdir -p /tmp/src && \
     cd /tmp/src && \
     git clone --depth 1 --branch v2.3.1 https://github.com/cisco/openh264.git && \
     cd openh264 && \
+    sed -i '/get_intra_predictor.cpp/d' codec/encoder/targets.mk && \
     make -j$(nproc) && \
     make install
 # Install libyuv
