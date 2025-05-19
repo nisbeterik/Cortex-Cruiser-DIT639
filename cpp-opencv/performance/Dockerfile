@@ -3,6 +3,15 @@ FROM ubuntu:22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Fix GPG key issues
+RUN rm -f /etc/apt/trusted.gpg.d/ubuntu-keyring-2012-cdimage.gpg \
+          /etc/apt/trusted.gpg.d/ubuntu-keyring-2018-archive.gpg && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C && \
+    rm -rf /var/lib/apt/lists/*
+
+
 # Install only essential build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
