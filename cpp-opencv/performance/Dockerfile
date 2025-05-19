@@ -16,13 +16,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libopencv-highgui-dev \
     libopencv-imgproc-dev
 
-# Install OpenH264
-RUN mkdir -p /tmp/src && \
-    cd /tmp/src && \
-    git clone --depth 1 --branch v2.3.1 https://github.com/cisco/openh264.git && \
-    cd openh264 && \
-    make CXXFLAGS="-O1 -DNDEBUG" -j2 && \
-    make install
+# OPTION 1: Install prebuilt OpenH264 (recommended)
+RUN apt-get install -y --no-install-recommends libopenh264-dev
+
+# OPTION 2: If you must build from source, use this instead:
+# RUN mkdir -p /tmp/src && \
+#     cd /tmp/src && \
+#     git clone --depth 1 --branch v2.1.1 https://github.com/cisco/openh264.git && \
+#     cd openh264 && \
+#     make -j2 && \
+#     make install
+
 
 # Install libyuv
 RUN mkdir -p /tmp/src && \
@@ -65,7 +69,7 @@ RUN rm -f /etc/apt/sources.list.d/* && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy libraries
-COPY --from=builder /usr/local/lib/libopenh264.so* /usr/lib/
+# COPY --from=builder /usr/local/lib/libopenh264.so* /usr/lib/
 COPY --from=builder /usr/lib/libyuv.so* /usr/lib/
 
 # Copy application
