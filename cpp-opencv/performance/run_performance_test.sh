@@ -16,7 +16,6 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
     -v "$(pwd)/${RECORDING_DIR}:/data" \
     performance:latest \
     --rec="/data/${filename}" \
-    --verbose
   
   if [ $? -ne 0 ]; then
     echo "Error processing ${filename}"
