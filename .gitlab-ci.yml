@@ -62,7 +62,7 @@ build:
     - docker-group6
   stage: build
   script:
-    - cd cpp-opencv/performance
+    - cd cpp-opencv
     - docker buildx create --name builder
     - docker buildx use builder
     - docker buildx inspect builder --bootstrap
@@ -78,7 +78,7 @@ test-coverage:
   script:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get install -y cmake g++ make lcov git perl gzip ca-certificates build-essential libopencv-dev libopencv-core3.2 libopencv-highgui3.2 libopencv-imgproc3.2
-    - cd cpp-opencv/performance
+    - cd cpp-opencv
     - mkdir -p build && cd build
     - cmake -DCODE_COVERAGE=ON ..
     - cmake --build . --target generate-cluon-msc
