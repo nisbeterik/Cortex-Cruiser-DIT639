@@ -4,7 +4,9 @@ FROM ubuntu:22.04 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get install -y ubuntu-keyring
+    apt-get install -y gnupg && \
+    gpg --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C && \
+    gpg --export --armor 871920D1991BC93C | apt-key add -
 
 # Install only essential build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
