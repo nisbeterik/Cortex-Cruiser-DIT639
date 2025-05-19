@@ -11,17 +11,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     wget \
     nasm \
-    g++ \
+    clang \
     libopencv-dev \
     libopencv-highgui-dev \
     libopencv-imgproc-dev
 
 # Install OpenH264
+
 RUN mkdir -p /tmp/src && \
     cd /tmp/src && \
     git clone --depth 1 --branch v2.3.1 https://github.com/cisco/openh264.git && \
     cd openh264 && \
-    make CXXFLAGS="-O2 -DNDEBUG" -j2 && \
+    make CC=clang CXX=clang++ CXXFLAGS="-O1 -DNDEBUG -UHAVE_NEON_AARCH64" -j1 && \
     make install
 
 # Install libyuv
