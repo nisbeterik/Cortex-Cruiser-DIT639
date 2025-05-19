@@ -53,7 +53,8 @@ performance:
   script:
     - cd cpp-opencv/performance
     - docker build --build-arg DEBIAN_FRONTEND=noninteractive -t "performance:latest" .
-    - docker run --rm performance:latest
+    - chmod +x run_performance_test.sh
+    - ./run_performance_test.sh
 
 # This section describes what shall be done to build and test the project.
 build:
