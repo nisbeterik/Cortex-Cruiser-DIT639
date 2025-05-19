@@ -1,76 +1,62 @@
-# Build stage
-FROM ubuntu:22.04 AS builder
+# Copyright (C) 2020  Christian Berger
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-ENV DEBIAN_FRONTEND=noninteractive
+# First stage for building the software:
+FROM ubuntu:18.04 AS builder
+LABEL Christian Berger "christian.berger@gu.se"
 
-# Install only essential build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    cmake \
-    make \
-    git \
-    wget \
-    nasm \
-    g++ \
-    libopencv-dev \
-    libopencv-highgui-dev \
-    libopencv-imgproc-dev
+ENV DEBIAN_FRONTEND noninteractive
 
-# Install OpenH264
-RUN mkdir -p /tmp/src && \
-    cd /tmp/src && \
-    git clone --depth 1 --branch v2.3.1 https://github.com/cisco/openh264.git && \
-    cd openh264 && \
-    make -j$(nproc) && \
-    make install
+# Upgrade the Ubuntu 18.04 LTS base image
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get dist-upgrade -y
 
-# Install libyuv
-RUN mkdir -p /tmp/src && \
-    cd /tmp/src && \
-    git clone https://chromium.googlesource.com/libyuv/libyuv && \
-    cd libyuv && \
-    mkdir build && cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/usr .. && \
-    make -j$(nproc) && \
-    make install
+# Install the development libraries for OpenCV
+RUN apt-get install -y --no-install-recommends \
+        ca-certificates \
+        cmake \
+        build-essential \
+        libopencv-dev
 
-# Build application
-COPY . /opt/sources
+# Include this source tree and compile the sources
+ADD . /opt/sources
 WORKDIR /opt/sources
-RUN mkdir build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp .. && \
-    make -j$(nproc) && \
-    make install
+RUN rm -rf build && \
+    mkdir build && \
+    cd build && \
+    cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/tmp .. && \
+    make && make install
 
-# Final image
-FROM ubuntu:22.04
-ENV DEBIAN_FRONTEND=noninteractive
 
-# Only install runtime dependencies
-# Fix GPG key issues and install dependencies
-RUN rm -f /etc/apt/sources.list.d/* && \
-    apt-get clean && \
-    apt-get update -oAcquire::AllowInsecureRepositories=true && \
-    apt-get install -y --allow-unauthenticated debian-archive-keyring && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-    libx11-6 \
-    libopencv-core4.5 \
-    libopencv-highgui4.5 \
-    libopencv-imgproc4.5 \
-    libopencv-videoio4.5 \
-    libopencv-imgcodecs4.5 \
-    libstdc++6 \
-    libgomp1 && \
-    rm -rf /var/lib/apt/lists/*
+# Second stage for packaging the software into a software bundle:
+FROM ubuntu:18.04
+MAINTAINER Christian Berger "christian.berger@gu.se"
 
-# Copy libraries
-COPY --from=builder /usr/local/lib/libopenh264.so* /usr/lib/
-COPY --from=builder /usr/lib/libyuv.so* /usr/lib/
+ENV DEBIAN_FRONTEND noninteractive
 
-# Copy application
-COPY --from=builder /tmp/bin/experimental /usr/bin/
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get dist-upgrade -y
 
-RUN ldconfig
+RUN apt-get install -y --no-install-recommends \
+        libopencv-core3.2 \
+        libopencv-highgui3.2 \
+        libopencv-imgproc3.2 
 
-ENTRYPOINT ["/usr/bin/experimental"]
+WORKDIR /usr/bin
+COPY --from=builder /tmp/bin/template-opencv .
+# This is the entrypoint when starting the Docker container; hence, this Docker image is automatically starting our software on its creation
+ENTRYPOINT ["/usr/bin/template-opencv"]
