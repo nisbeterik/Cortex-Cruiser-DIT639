@@ -42,6 +42,7 @@ int32_t main(int32_t argc, char **argv)
     bool hasAngle = false;                                // variable to keep track if image frame has equivalent gsr data
     int totalValid = 0;                                   // Amount of valid ground truth values
     int withinRange = 0;                                  // Amount of calculated steering angles within range
+    float acc = 0;                                        // Accuracy of algorithm compared to truth steering values
     
     // Initialize the decoder
     ISVCDecoder *decoder = nullptr;
@@ -112,6 +113,7 @@ int32_t main(int32_t argc, char **argv)
                                 );
                                 // Process frame to calculate steering
                                 calculatedSteering = processFrame(bgrImage, verbose);
+                                
                                 // Determine difference between calculated and truth values, unless gsr is 0
                                 if (gsr.groundSteering() != 0)
                                 {
@@ -122,7 +124,10 @@ int32_t main(int32_t argc, char **argv)
                                     }
                                 }
                                 // Print output
-                                std::cout << lineCount << ";" << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << std::endl;
+                                if (totalValid > 0){
+                                    acc = ((double)withinRange / totalValid) * 100.0;
+                                }
+                                std::cout << lineCount << ";" << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << ";" << acc << std::endl;
                                 lineCount++;
                                 hasAngle = false;
                             }
@@ -135,19 +140,12 @@ int32_t main(int32_t argc, char **argv)
             {
                 ts = envelope.sampleTimeStamp();
                 ts_ms = cluon::time::toMicroseconds(ts); // take timestamp
+                
                 // if corresponding image exists with timestamp
                 gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(envelope));
                 hasAngle = true;
             }
         }
-    }
-    if (totalValid > 0)
-    {
-        double percentage = ((double)withinRange / totalValid) * 100.0;
-        std::cout << "Accuracy = " << percentage << "%" << std::endl;
-        std::cout << "Total Valid: " << totalValid << std::endl;
-        std::cout << "Within Range: " << withinRange << std::endl;
-        std::cout << "Failures: " << failures << std::endl;
     }
     return 0;
 }
