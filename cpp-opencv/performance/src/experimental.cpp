@@ -37,7 +37,6 @@ int32_t main(int32_t argc, char **argv)
     cluon::data::TimeStamp ts;                            // TimeStamp object to store timestamp
     double calculatedSteering;                            // The steering calculated using our algorithm
     int64_t ts_ms;                                        // variable to store timestamp in millieseconds
-    int32_t lineCount = 0;                                // line count to make the number of prints matches number of groundsteering messages
     int failures = 0;                                     // counts frames that failed to decode / process
     bool hasAngle = false;                                // variable to keep track if image frame has equivalent gsr data
     int totalValid = 0;                                   // Amount of valid ground truth values
@@ -127,8 +126,7 @@ int32_t main(int32_t argc, char **argv)
                                 if (totalValid > 0){
                                     acc = ((double)withinRange / totalValid) * 100.0;
                                 }
-                                std::cout << lineCount << ";" << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << ";" << acc << std::endl;
-                                lineCount++;
+                                std::cout << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << ";" << acc << std::endl;
                                 hasAngle = false;
                             }
                         }
