@@ -2,6 +2,7 @@
 
 RECORDING_DIR="src/automation"
 OUTPUT_DIR="plots"
+COMMIT_HASH="$1"
 
 # Create output directory if it doesn't exist
 mkdir -p "${OUTPUT_DIR}"
@@ -17,7 +18,7 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   [ -e "${rec_file}" ] || continue
   
   filename=$(basename "${rec_file}" .rec)
-  output_png="${OUTPUT_DIR}/${filename}.png"
+  output_png="${OUTPUT_DIR}/${filename}_${COMMIT_HASH}.png"
   
   echo "Processing recording file: ${filename}.rec"
   echo "Output will be saved to: ${output_png}"

@@ -57,7 +57,7 @@ performance:
     - cd performance/
     - chmod +x run_performance_test.sh
     - mkdir -p plots 
-    - ./run_performance_test.sh
+    - ./run_performance_test.sh "${CI_COMMIT_SHORT_SHA}"
   artifacts:
     paths:
       - cpp-opencv/performance/plots/
