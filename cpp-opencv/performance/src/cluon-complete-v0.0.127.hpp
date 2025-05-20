@@ -14510,7 +14510,7 @@ inline void Player::computeInitialCacheLevelAndFillCache() noexcept {
                                               / static_cast<float>(largestSampleTimePoint - smallestSampleTimePoint)));
         m_desiredInitialLevel = (std::max<uint32_t>)(ENTRIES_TO_READ_PER_SECOND_FOR_REALTIME_REPLAY * Player::LOOK_AHEAD_IN_S, MIN_ENTRIES_FOR_LOOK_AHEAD);
 
-        std::clog << "[cluon::Player]: Initializing cache with " << m_desiredInitialLevel << " entries." << std::endl;
+        // std::clog << "[cluon::Player]: Initializing cache with " << m_desiredInitialLevel << " entries." << std::endl;
 
         resetCaches();
         resetIterators();
