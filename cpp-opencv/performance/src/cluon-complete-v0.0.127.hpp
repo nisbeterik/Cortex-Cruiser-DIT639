@@ -14429,10 +14429,8 @@ inline void Player::setPlayerListener(std::function<void(cluon::data::PlayerStat
 
 ////////////////////////////////////////////////////////////////////////
 
-
-
 inline void Player::initializeIndex() noexcept {
-    m_recFile.open(m_file.c_str(), std::ios_base::in | std::ios_base::binary); 
+    m_recFile.open(m_file.c_str(), std::ios_base::in | std::ios_base::binary); /* Flawfinder: ignore */
     m_recFileValid = m_recFile.good();
 
     if (m_recFileValid) {
@@ -14461,7 +14459,7 @@ inline void Player::initializeIndex() noexcept {
 
                     const int32_t percentage = static_cast<int32_t>((static_cast<float>(m_recFile.tellg()) * 100.0f) / static_cast<float>(fileLength));
                     if ((percentage % 5 == 0) && (percentage != oldPercentage)) {
-                        // std::clog << "[cluon::Player]: Indexed " << percentage << "% from " << m_file << "." << std::endl;
+                        std::clog << "[cluon::Player]: Indexed " << percentage << "% from " << m_file << "." << std::endl;
                         oldPercentage = percentage;
                     }
                 }
@@ -14469,9 +14467,9 @@ inline void Player::initializeIndex() noexcept {
         }
         const cluon::data::TimeStamp AFTER{cluon::time::now()};
 
-       // std::clog << "[cluon::Player]: " << m_file << " contains " << m_index.size() << " entries; "
-       //           << "read " << totalBytesRead << " bytes "
-       //           << "in " << cluon::time::deltaInMicroseconds(AFTER, BEFORE) / static_cast<int64_t>(1000 * 1000) << "s." << std::endl;
+        std::clog << "[cluon::Player]: " << m_file << " contains " << m_index.size() << " entries; "
+                  << "read " << totalBytesRead << " bytes "
+                  << "in " << cluon::time::deltaInMicroseconds(AFTER, BEFORE) / static_cast<int64_t>(1000 * 1000) << "s." << std::endl;
     } else {
         std::clog << "[cluon::Player]: " << m_file << " could not be opened." << std::endl;
     }
@@ -14510,7 +14508,7 @@ inline void Player::computeInitialCacheLevelAndFillCache() noexcept {
                                               / static_cast<float>(largestSampleTimePoint - smallestSampleTimePoint)));
         m_desiredInitialLevel = (std::max<uint32_t>)(ENTRIES_TO_READ_PER_SECOND_FOR_REALTIME_REPLAY * Player::LOOK_AHEAD_IN_S, MIN_ENTRIES_FOR_LOOK_AHEAD);
 
-        // std::clog << "[cluon::Player]: Initializing cache with " << m_desiredInitialLevel << " entries." << std::endl;
+        std::clog << "[cluon::Player]: Initializing cache with " << m_desiredInitialLevel << " entries." << std::endl;
 
         resetCaches();
         resetIterators();
