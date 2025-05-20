@@ -1,25 +1,29 @@
-# Set the output format
-set terminal pngcairo size 1024,768 enhanced font 'Arial,14'
-set output 'output_plot.png'
+# Set output to PNG
+set terminal pngcairo size 800,600 enhanced font 'Arial,10'
+set output 'plot.png'
 
-# Set titles and labels
-set title "Steering vs. Ground Truth Over Time"
-set xlabel "Timestamp (microseconds)"
+# Data format: timestamp;y1;y2;accuracy
+set datafile separator ';'
+
+# Extract the last 'accuracy' value from the data stream
+stats '< tail -n 1 input.dat' using 4 nooutput
+last_accuracy = STATS_max
+
+# Set title with the last accuracy value
+set title sprintf("Data Plot (Accuracy: %.4f)", last_accuracy)
+
+# Configure time on x-axis
+set xdata time
+set timefmt "%s"  # Timestamp in microseconds (adjust if needed)
+set format x "%H:%M:%S"
+
+# Axis labels
+set xlabel "Time"
 set ylabel "Values"
 
-# Set grid and key
-set grid
-set key outside
+# Plot the data
+plot "input.dat" using ($1/1e6):2 with lines title "Column 2", \
+     "" using ($1/1e6):3 with lines title "Column 3"
 
-# Specify the separator and skip the header row
-set datafile separator ","
-set datafile missing "NaN" # Handle any missing data gracefully
-set key autotitle columnhead # Use column headers as legend titles
-
-# Adjust x-axis label format
-set xtics rotate by -45 # Rotate x-axis labels by 45 degrees counterclockwise
-set format x "%.0f" # Display x-axis values as integers
-
-# Skip the header row by starting plotting from the second line
-plot 'computed_output.csv' every ::1 using 1:2 with lines title "Ground Steering" lc rgb "red", \
-     'computed_output.csv' every ::1 using 1:3 with lines title "Ground Truth" lc rgb "blue"
+# Add accuracy label (positioned at graph's top-right)
+set label sprintf("Accuracy: %.4f", last_accuracy) at graph 0.95, graph 0.95 right
