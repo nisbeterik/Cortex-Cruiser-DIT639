@@ -15,9 +15,10 @@
 
 cmake_minimum_required(VERSION 3.2)
 
-project(template-opencv)
+project(main)
 
-
+# Add the common library
+add_subdirectory(/opt/sources/common ${CMAKE_BINARY_DIR}/common)
 
 ################################################################################
 # Defining the relevant versions of OpenDLV Standard Message Set and libcluon.
@@ -90,10 +91,8 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp
 include_directories(SYSTEM ${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-# Include header files
-set(HEADER_FILES 
-    src/steering.hpp
-)
+# Include shared header files from common
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../common/include)
 
 ################################################################################
 # Gather all object code first to avoid double compilation.
@@ -116,11 +115,12 @@ set(LIBRARIES ${LIBRARIES} ${OpenCV_LIBS})
 # Create executable
 add_executable(${PROJECT_NAME}
     src/${PROJECT_NAME}.cpp
-    src/steering.cpp
-    ${HEADER_FILES}
 )
 
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
+target_link_libraries(${PROJECT_NAME} 
+    ${LIBRARIES}
+    steering_common
+)
 
 # Add dependency to OpenDLV Standard Message Set.
 add_custom_target(generate_opendlv_standard_message_set_hpp DEPENDS ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp)
@@ -129,12 +129,14 @@ add_dependencies(${PROJECT_NAME} generate_opendlv_standard_message_set_hpp)
 ################################################################################
 # Install executable.
 
-
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME}-Runner src/test-template.cpp src/istrue.cpp)
 
-target_link_libraries(${PROJECT_NAME}-Runner ${LIBRARIES})
+target_link_libraries(${PROJECT_NAME}-Runner 
+    ${LIBRARIES}
+    steering_common
+)
 
 enable_testing()
 add_test(NAME ${PROJECT_NAME}-Runner COMMAND ${PROJECT_NAME}-Runner)
