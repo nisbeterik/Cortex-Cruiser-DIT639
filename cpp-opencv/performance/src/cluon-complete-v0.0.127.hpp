@@ -9118,7 +9118,7 @@ class LIBCLUON_API Player {
      * time stamps are sorted chronocally and mapped to the
      * corresponding cluon::data::Envelope in the rec file.
      */
-    // void initializeIndex() noexcept;
+    void initializeIndex() noexcept;
 
     /**
      * This method computes the initially required amount of
@@ -14400,7 +14400,7 @@ inline Player::Player(const std::string &file, const bool &autoRewind, const boo
     , m_envelopeCache()
     , m_playerListenerMutex()
     , m_playerListener(nullptr) {
-    // initializeIndex();
+    initializeIndex();
     computeInitialCacheLevelAndFillCache();
 
     if (m_threading) {
@@ -14429,8 +14429,10 @@ inline void Player::setPlayerListener(std::function<void(cluon::data::PlayerStat
 
 ////////////////////////////////////////////////////////////////////////
 
+
+
 inline void Player::initializeIndex() noexcept {
-    m_recFile.open(m_file.c_str(), std::ios_base::in | std::ios_base::binary); /* Flawfinder: ignore */
+    m_recFile.open(m_file.c_str(), std::ios_base::in | std::ios_base::binary); 
     m_recFileValid = m_recFile.good();
 
     if (m_recFileValid) {
@@ -14459,7 +14461,7 @@ inline void Player::initializeIndex() noexcept {
 
                     const int32_t percentage = static_cast<int32_t>((static_cast<float>(m_recFile.tellg()) * 100.0f) / static_cast<float>(fileLength));
                     if ((percentage % 5 == 0) && (percentage != oldPercentage)) {
-                        std::clog << "[cluon::Player]: Indexed " << percentage << "% from " << m_file << "." << std::endl;
+                        // std::clog << "[cluon::Player]: Indexed " << percentage << "% from " << m_file << "." << std::endl;
                         oldPercentage = percentage;
                     }
                 }
@@ -14467,9 +14469,9 @@ inline void Player::initializeIndex() noexcept {
         }
         const cluon::data::TimeStamp AFTER{cluon::time::now()};
 
-        std::clog << "[cluon::Player]: " << m_file << " contains " << m_index.size() << " entries; "
-                  << "read " << totalBytesRead << " bytes "
-                  << "in " << cluon::time::deltaInMicroseconds(AFTER, BEFORE) / static_cast<int64_t>(1000 * 1000) << "s." << std::endl;
+       // std::clog << "[cluon::Player]: " << m_file << " contains " << m_index.size() << " entries; "
+       //           << "read " << totalBytesRead << " bytes "
+       //           << "in " << cluon::time::deltaInMicroseconds(AFTER, BEFORE) / static_cast<int64_t>(1000 * 1000) << "s." << std::endl;
     } else {
         std::clog << "[cluon::Player]: " << m_file << " could not be opened." << std::endl;
     }
