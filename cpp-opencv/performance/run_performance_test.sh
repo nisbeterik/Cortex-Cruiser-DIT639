@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 
 RECORDING_DIR="src/automation"
-OUTPUT_DIR="plots"  # Directory to store output PNGs
+OUTPUT_DIR="plots"
 
 # Create output directory if it doesn't exist
 mkdir -p "${OUTPUT_DIR}"
@@ -14,7 +14,7 @@ fi
 
 # Process each .rec file
 for rec_file in "${RECORDING_DIR}"/*.rec; do
-  [ -e "$rec_file" ] || continue
+  [ -e "${rec_file}" ] || continue
   
   filename=$(basename "${rec_file}" .rec)
   output_png="${OUTPUT_DIR}/${filename}.png"
