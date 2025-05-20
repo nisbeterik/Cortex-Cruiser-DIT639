@@ -54,7 +54,13 @@ performance:
     - cd cpp-opencv/performance
     - docker build --build-arg DEBIAN_FRONTEND=noninteractive -t "performance:latest" .
     - chmod +x run_performance_test.sh
+    - mkdir -p plots 
     - ./run_performance_test.sh
+  artifacts:
+    paths:
+      - cpp-opencv/performance/plots/
+    expire_in: 1 week
+    when: always
 
 # This section describes what shall be done to build and test the project.
 build:
