@@ -50,6 +50,7 @@ performance:
     - docker:24.0.2-dind
   before_script:
     - docker info
+    - apk add --no-cache gnuplot
   script:
     - cd cpp-opencv/performance
     - docker build --build-arg DEBIAN_FRONTEND=noninteractive -t "performance:latest" .
