@@ -75,8 +75,8 @@ COPY --from=builder /usr/local/lib/libopenh264.so* /usr/lib/
 COPY --from=builder /usr/lib/libyuv.so* /usr/lib/
 
 # Copy application
-COPY --from=builder /tmp/bin/experimental /usr/bin/
+COPY --from=builder /tmp/bin/performance /usr/bin/
 
 RUN ldconfig
 
-ENTRYPOINT ["/usr/bin/experimental"]
+ENTRYPOINT ["/usr/bin/performance"]
