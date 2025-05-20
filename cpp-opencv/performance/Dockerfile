@@ -1,6 +1,5 @@
 # Build stage
 FROM ubuntu:22.04 AS builder
-
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install only essential build dependencies
@@ -34,11 +33,25 @@ RUN mkdir -p /tmp/src && \
     make -j$(nproc) && \
     make install
 
-# Build application
-COPY . /opt/sources
-WORKDIR /opt/sources
+# First copy JUST the common directory
+COPY ./common /opt/sources/common
+
+# Then copy the performance directory
+COPY ./performance /opt/sources/performance
+
+# Verify the copied structure
+RUN ls -la /opt/sources && \
+    ls -la /opt/sources/common && \
+    ls -la /opt/sources/common/include && \
+    ls -la /opt/sources/common/src
+
+WORKDIR /opt/sources/performance
+
+# Build with absolute path to common
 RUN mkdir build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp .. && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=/tmp \
+          .. && \
     make -j$(nproc) && \
     make install
 
@@ -53,7 +66,6 @@ RUN apt-get update && \
     dpkg-reconfigure -f noninteractive tzdata
 
 # Only install runtime dependencies
-# Fix GPG key issues and install dependencies
 RUN rm -f /etc/apt/sources.list.d/* && \
     apt-get clean && \
     apt-get update -oAcquire::AllowInsecureRepositories=true && \
@@ -76,7 +88,6 @@ COPY --from=builder /usr/lib/libyuv.so* /usr/lib/
 
 # Copy application
 COPY --from=builder /tmp/bin/performance /usr/bin/
-
 RUN ldconfig
 
 ENTRYPOINT ["/usr/bin/performance"]
