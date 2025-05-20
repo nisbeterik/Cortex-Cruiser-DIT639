@@ -9118,7 +9118,7 @@ class LIBCLUON_API Player {
      * time stamps are sorted chronocally and mapped to the
      * corresponding cluon::data::Envelope in the rec file.
      */
-    void initializeIndex() noexcept;
+    // void initializeIndex() noexcept;
 
     /**
      * This method computes the initially required amount of
@@ -14400,7 +14400,7 @@ inline Player::Player(const std::string &file, const bool &autoRewind, const boo
     , m_envelopeCache()
     , m_playerListenerMutex()
     , m_playerListener(nullptr) {
-    initializeIndex();
+    // initializeIndex();
     computeInitialCacheLevelAndFillCache();
 
     if (m_threading) {
