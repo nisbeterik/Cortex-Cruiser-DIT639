@@ -2,12 +2,15 @@
 
 RECORDING_DIR="src/automation"
 OUTPUT_DIR="plots"
-COMMIT_HASH="$1"
+CSV_OUTPUT_DIR="output"
 PREVIOUS_OUTPUT_DIR="previous_plots"
+PREVIOUS_CSV_DIR="previous_output" 
 
 # Create directories if they don't exist
 mkdir -p "${OUTPUT_DIR}"
+mkdir -p "${CSV_OUTPUT_DIR}" 
 mkdir -p "${PREVIOUS_OUTPUT_DIR}"
+mkdir -p "${PREVIOUS_CSV_DIR}"
 
 # Verify recording directory exists
 if [ ! -d "${RECORDING_DIR}" ]; then
@@ -67,15 +70,19 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   
   filename=$(basename "${rec_file}" .rec)
   output_png="${OUTPUT_DIR}/${filename}_${COMMIT_HASH}.png"
+  output_csv="${CSV_OUTPUT_DIR}/${filename}_${COMMIT_HASH}.csv" 
   
   echo "Processing recording file: ${filename}.rec"
-  echo "Output will be saved to: ${output_png}"
+  echo "Plot will be saved to: ${output_png}"
+  echo "CSV will be saved to: ${output_csv}"
   
   # Process the recording and generate plot
   docker run \
     -v "$(pwd)/${RECORDING_DIR}:/data" \
+    -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \
     performance:latest \
     --rec="/data/${filename}.rec" \
+    --output="/output/${filename}_${COMMIT_HASH}.csv" \
     | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$' \
     | gnuplot -e "output_png='${output_png}'" -c plot_script.gnuplot
   
@@ -84,7 +91,7 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
     exit 1
   fi
   
-  echo "Successfully generated: ${output_png}"
+  echo "Successfully generated: ${output_png} and ${output_csv}"
   echo "----------------------------------"
 done
 

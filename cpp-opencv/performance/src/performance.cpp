@@ -29,6 +29,21 @@ int32_t main(int32_t argc, char **argv)
         std::cerr << "Example: " << argv[0] << " --rec=myRecording.rec" << std::endl;
         return 1;
     }
+
+    // Add output file path handling
+    std::string outputPath = "output.csv";  // Default
+    if (commandlineArguments.count("output") > 0) {
+        outputPath = commandlineArguments["output"];
+    }
+
+    // Open file with error checking
+    std::ofstream computedFile(outputPath);
+    if (!computedFile.is_open()) {
+        std::cerr << "Error: Could not open output file at " << outputPath << std::endl;
+        return 1;
+    }
+    computedFile << "groundSteering,accuracy\n";
+
     const std::string recFile = commandlineArguments["rec"];
     bool verbose = (commandlineArguments.count("verbose") != 0);
     cluon::Player player(recFile, AUTOREWIND, THREADING); // pass recording file and other parameters to Player object
@@ -127,6 +142,7 @@ int32_t main(int32_t argc, char **argv)
                                     acc = ((double)withinRange / totalValid) * 100.0;
                                 }
                                 std::cout << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << ";" << acc << std::endl;
+                                computedFile << calculatedSteering << "," << acc << "\n";
                                 hasAngle = false;
                             }
                         }
@@ -145,5 +161,6 @@ int32_t main(int32_t argc, char **argv)
             }
         }
     }
+    computedFile.close();
     return 0;
 }
