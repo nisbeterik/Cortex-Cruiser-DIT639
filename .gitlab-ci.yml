@@ -48,7 +48,8 @@ performance:
     - docker:24.0.2-dind
   before_script:
     - docker info
-    - apk add --no-cache gnuplot curl unzip git jq
+    - apk add --no-cache curl unzip git jq
+    - apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing gnuplot
   script:
     - cd cpp-opencv/
     - docker build -f performance/Dockerfile -t performance:latest .
