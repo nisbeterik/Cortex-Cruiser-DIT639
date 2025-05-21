@@ -42,6 +42,29 @@ if [ -n "$CI" ]; then
   echo "----------------------------------"
 fi
 
+if [ "$previous_perf_job_id" = "null" ] || [ -z "$previous_perf_job_id" ]; then
+    echo "No previous successful 'performance' job found."
+  else
+    echo "Previous successful 'performance' job ID: $previous_perf_job_id"
+    
+    # Fetch artifacts from the previous job
+    echo "Fetching artifacts from previous job..."
+    curl -sS --header "PRIVATE-TOKEN: $CI_API_TOKEN" \
+      -o "${PREVIOUS_OUTPUT_DIR}/artifacts.zip" \
+      "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/$previous_perf_job_id/artifacts"
+    
+    if [ $? -eq 0 ]; then
+      echo "Successfully downloaded artifacts"
+      # Unzip the artifacts
+      unzip -qo "${PREVIOUS_OUTPUT_DIR}/artifacts.zip" -d "${PREVIOUS_OUTPUT_DIR}"
+      echo "Artifacts extracted to ${PREVIOUS_OUTPUT_DIR}"
+    else
+      echo "Failed to download artifacts from previous job"
+    fi
+  fi
+
+
+
 # Process each .rec file
 for rec_file in "${RECORDING_DIR}"/*.rec; do
   [ -e "${rec_file}" ] || continue
