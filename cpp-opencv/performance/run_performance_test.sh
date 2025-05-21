@@ -15,34 +15,21 @@ if [ ! -d "${RECORDING_DIR}" ]; then
   exit 1
 fi
 
-# Attempt to fetch previous artifacts if CI is running
+# Attempt to fetch previous jobs if CI is running
 if [ -n "$CI" ]; then
-  echo "Running in CI environment, attempting to fetch previous artifacts..."
-  
-  # Get the previous commit hash (HEAD~1)
-  PREVIOUS_COMMIT=$(git rev-parse HEAD~1 2>/dev/null)
-  
-  if [ -n "$PREVIOUS_COMMIT" ]; then
-    echo "Attempting to fetch artifacts from commit: $PREVIOUS_COMMIT"
-    
-    # Using CI_JOB_TOKEN for authentication (automatically available in CI jobs)
-    curl --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
-      "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/$PREVIOUS_COMMIT/download?job=performance" \
-      -o previous_artifacts.zip
-    
-    if [ $? -eq 0 ] && [ -f previous_artifacts.zip ]; then
-      echo "Successfully downloaded previous artifacts"
-      unzip -q previous_artifacts.zip -d "${PREVIOUS_OUTPUT_DIR}"
-      echo "Previous plots extracted to: ${PREVIOUS_OUTPUT_DIR}"
-      rm previous_artifacts.zip
-    else
-      echo "Warning: Could not retrieve previous artifacts (might be first run or artifacts expired)"
-    fi
-  else
-    echo "Warning: Could not determine previous commit hash"
+  echo "Running in CI environment, attempting to fetch previous jobs..."
+
+  response=$(curl -sS --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+    "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs")
+
+  if [ $? -ne 0 ]; then
+    echo "Failed to fetch previous jobs from GitLab API"
+    exit 1
   fi
-else
-  echo "Not running in CI, skipping artifact retrieval"
+
+  echo "Response from GitLab API:"
+  echo "$response"
+  echo "----------------------------------"
 fi
 
 # Process each .rec file
