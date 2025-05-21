@@ -1,7 +1,7 @@
 #!/usr/bin/gnuplot -persist
 
 # Set output to PNG with dynamic filename
-set terminal pngcairo size 1200,800 enhanced font 'Helvetica,12'
+set terminal png size 1200,800 
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
