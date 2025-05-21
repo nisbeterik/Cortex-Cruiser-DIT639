@@ -17,8 +17,18 @@ cmake_minimum_required(VERSION 3.2)
 
 project(main)
 
-# Add the common library
-add_subdirectory(/opt/sources/common ${CMAKE_BINARY_DIR}/common)
+# Add the common library - with flexible path detection
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../common)
+    # GitLab CI/CD environment or local environment with relative paths
+    set(COMMON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../common)
+    add_subdirectory(${COMMON_DIR} ${CMAKE_BINARY_DIR}/common)
+elseif(EXISTS /opt/sources/common)
+    # Docker environment 
+    set(COMMON_DIR /opt/sources/common)
+    add_subdirectory(${COMMON_DIR} ${CMAKE_BINARY_DIR}/common)
+else()
+    message(FATAL_ERROR "Cannot find common directory! Checked ${CMAKE_CURRENT_SOURCE_DIR}/../common and /opt/sources/common")
+endif()
 
 ################################################################################
 # Defining the relevant versions of OpenDLV Standard Message Set and libcluon.
@@ -92,7 +102,7 @@ include_directories(SYSTEM ${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Include shared header files from common
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../common/include)
+include_directories(${COMMON_DIR}/include)
 
 ################################################################################
 # Gather all object code first to avoid double compilation.
