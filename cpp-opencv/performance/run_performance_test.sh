@@ -16,27 +16,31 @@ if [ ! -d "${RECORDING_DIR}" ]; then
 fi
 # Attempt to fetch previous jobs if CI is running
 if [ -n "$CI" ]; then
-  echo "Running in CI environment, attempting to fetch previous performance jobs..."
-  
-  # Fetch only successful performance jobs, sorted by latest first
-  response=$(curl -sS --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
-    "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs?scope[]=success&per_page=1&job_name=performance")
+  echo "Running in CI environment, attempting to fetch previous jobs..."
+  echo "GitLab API URL: $CI_API_V4_URL"
+  echo "GitLab Project ID: $CI_PROJECT_ID"
+
+  response=$(curl -sS --header "PRIVATE-TOKEN: $CI_API_TOKEN" \
+    "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs")
 
   if [ $? -ne 0 ]; then
     echo "Failed to fetch previous jobs from GitLab API"
     exit 1
   fi
 
-  # Extract the job ID from the response
-  performance_job_id=$(echo "$response" | jq -r '.[0].id' 2>/dev/null)
+  # Extract the ID of the latest successful job in the "performance" stage
+  previous_perf_job_id=$(echo "$response" | jq '[.[] | select(.stage == "performance" and .status == "success")] | first | .id')
 
-  if [ -n "$performance_job_id" ] && [ "$performance_job_id" != "null" ]; then
-    echo "Latest successful performance job ID: $performance_job_id"
+  if [ "$previous_perf_job_id" = "null" ] || [ -z "$previous_perf_job_id" ]; then
+    echo "No previous successful 'performance' job found."
   else
-    echo "No previous successful performance jobs found"
+    echo "Previous successful 'performance' job ID: $previous_perf_job_id"
+    # Save it to a file for downstream use if needed
+    echo "$previous_perf_job_id" > "${PREVIOUS_OUTPUT_DIR}/previous_perf_job_id.txt"
   fi
-fi
 
+  echo "----------------------------------"
+fi
 
 # Process each .rec file
 for rec_file in "${RECORDING_DIR}"/*.rec; do
