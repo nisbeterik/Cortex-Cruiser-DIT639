@@ -35,8 +35,6 @@ if [ -n "$CI" ]; then
     echo "No previous successful 'performance' job found."
   else
     echo "Previous successful 'performance' job ID: $previous_perf_job_id"
-    # Save it to a file for downstream use if needed
-    echo "$previous_perf_job_id" > "${PREVIOUS_OUTPUT_DIR}/previous_perf_job_id.txt"
   fi
 
   echo "----------------------------------"
