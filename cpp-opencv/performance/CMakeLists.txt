@@ -138,13 +138,3 @@ add_dependencies(${PROJECT_NAME} generate_opendlv_standard_message_set_hpp)
 add_definitions(-DREC_PROCESSING)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ${PROJECT_NAME})
-
-add_executable(${PROJECT_NAME}-Runner src/test-template.cpp src/istrue.cpp)
-
-target_link_libraries(${PROJECT_NAME}-Runner 
-    ${LIBRARIES}
-    steering_common
-)
-
-enable_testing()
-add_test(NAME ${PROJECT_NAME}-Runner COMMAND ${PROJECT_NAME}-Runner)
