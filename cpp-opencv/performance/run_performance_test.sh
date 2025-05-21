@@ -21,7 +21,7 @@ if [ -n "$CI" ]; then
   echo "GitLab API URL: $CI_API_V4_URL"
   echo "GitLab Project ID: $CI_PROJECT_ID"
 
-  response=$(curl -sS --header "PRIVATE-TOKEN: $CI_REGISTRY_PASSWORD" \
+  response=$(curl -sS --header "PRIVATE-TOKEN: $CI_API_TOKEN" \
     "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs")
 
   if [ $? -ne 0 ]; then
