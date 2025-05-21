@@ -38,9 +38,7 @@ if [ -n "$CI" ]; then
   fi
 
   echo "----------------------------------"
-fi
-
-if [ "$previous_perf_job_id" = "null" ] || [ -z "$previous_perf_job_id" ]; then
+  if [ "$previous_perf_job_id" = "null" ] || [ -z "$previous_perf_job_id" ]; then
     echo "No previous successful 'performance' job found."
   else
     echo "Previous successful 'performance' job ID: $previous_perf_job_id"
@@ -60,7 +58,7 @@ if [ "$previous_perf_job_id" = "null" ] || [ -z "$previous_perf_job_id" ]; then
       echo "Failed to download artifacts from previous job"
     fi
   fi
-
+fi
 
 
 # Process each .rec file

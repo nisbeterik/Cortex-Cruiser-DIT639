@@ -1,7 +1,7 @@
 #!/usr/bin/gnuplot -persist
 
 # Set output to PNG with dynamic filename
-set terminal pngcairo size 1200,800 enhanced font 'Verdana,12'
+set terminal pngcairo size 1200,800 enhanced font 'Helvetica,12'
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
@@ -30,9 +30,5 @@ set ylabel "Value"
 set grid
 
 # Plot using raw timestamp values
-plot $dummy using ($1/1e6):2 with lines lw 2 title "groundTruth", \
+plot $dummy using ($1/1e6):2 with lines lw 1 title "groundTruth", \
      $dummy using ($1/1e6):3 with lines lw 2 title "groundSteering"
-
-# Add accuracy box (only the final value)
-set obj 1 rect at graph 0.95, graph 0.95 size char 20, char 3 fc rgb "white" fs solid 0.5 border
-set label 1 sprintf("Final Accuracy: %.2f%%", last_accuracy) at graph 0.95, graph 0.95 right
