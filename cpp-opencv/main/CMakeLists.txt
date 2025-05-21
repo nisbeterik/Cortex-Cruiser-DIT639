@@ -17,15 +17,18 @@ cmake_minimum_required(VERSION 3.2)
 
 project(main)
 
-# Add the common library
-add_subdirectory(/opt/sources/common ${CMAKE_BINARY_DIR}/common)
-
-################################################################################
-# Defining the relevant versions of OpenDLV Standard Message Set and libcluon.
-# The OpenDLV Standard Message Set contains a set of messages usually used in automotive research project.
-set(OPENDLV_STANDARD_MESSAGE_SET opendlv-standard-message-set-v0.9.6.odvd)
-# libcluon is a small and portable middleware to easily realize high-performance microservices with C++: https://github.com/chrberger/libcluon
-set(CLUON_COMPLETE cluon-complete-v0.0.127.hpp)
+# Add the common library - with flexible path detection
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../common)
+    # GitLab CI/CD environment or local environment with relative paths
+    set(COMMON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../common)
+    add_subdirectory(${COMMON_DIR} ${CMAKE_BINARY_DIR}/common)
+elseif(EXISTS /opt/sources/common)
+    # Docker environment 
+    set(COMMON_DIR /opt/sources/common)
+    add_subdirectory(${COMMON_DIR} ${CMAKE_BINARY_DIR}/common)
+else()
+    message(FATAL_ERROR "Cannot find common directory! Checked ${CMAKE_CURRENT_SOURCE_DIR}/../common and /opt/sources/common")
+endif()
 
 ################################################################################
 # Set the search path for .cmake files.
@@ -53,6 +56,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-but-set-parameter -Wunused-but-set-variable \
     -Wunused-value -Wunused-variable -Wunused-result \
     -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn")
+
 # Threads are necessary for linking the resulting binaries as the network communication is running inside a thread.
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -64,35 +68,14 @@ if(CODE_COVERAGE)
         message(STATUS "Code coverage enabled")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -O0")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
-        add_custom_target(generate-cluon-msc DEPENDS ${CMAKE_BINARY_DIR}/cluon-msc)
-        add_custom_target(generate-opendlv-header DEPENDS ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp)
     endif()
 else()
     set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 endif()
 
-################################################################################
-# Extract cluon-msc from cluon-complete.hpp.
-# cluon-msc is the message compiler that compiles a .odvd message specification into a header-only C++ file.
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/cluon-msc
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/src/${CLUON_COMPLETE} ${CMAKE_BINARY_DIR}/cluon-complete.hpp
-    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_BINARY_DIR}/cluon-complete.hpp ${CMAKE_BINARY_DIR}/cluon-complete.cpp
-    COMMAND ${CMAKE_CXX_COMPILER} -o ${CMAKE_BINARY_DIR}/cluon-msc ${CMAKE_BINARY_DIR}/cluon-complete.cpp -std=c++14 -pthread -D HAVE_CLUON_MSC
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/${CLUON_COMPLETE})
-
-################################################################################
-# Generate opendlv-standard-message-set.hpp from ${OPENDLV_STANDARD_MESSAGE_SET} file.
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND ${CMAKE_BINARY_DIR}/cluon-msc --cpp --out=${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp ${CMAKE_CURRENT_SOURCE_DIR}/src/${OPENDLV_STANDARD_MESSAGE_SET}
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/${OPENDLV_STANDARD_MESSAGE_SET} ${CMAKE_BINARY_DIR}/cluon-msc)
-# Add current build directory as include directory as it contains generated files.
-include_directories(SYSTEM ${CMAKE_BINARY_DIR})
+# Includes
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-
-# Include shared header files from common
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../common/include)
+include_directories(${COMMON_DIR}/include)
 
 ################################################################################
 # Gather all object code first to avoid double compilation.
@@ -109,29 +92,29 @@ endif()
 # This project uses OpenCV for image processing.
 find_package(OpenCV REQUIRED core highgui imgproc)
 include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
+include_directories(SYSTEM ${CMAKE_BINARY_DIR})
 set(LIBRARIES ${LIBRARIES} ${OpenCV_LIBS})
 
 ################################################################################
 # Create executable
-add_executable(${PROJECT_NAME}
-    src/${PROJECT_NAME}.cpp
-)
+add_executable(${PROJECT_NAME} src/${PROJECT_NAME}.cpp)
+
+# Add dependency to OpenDLV Standard Message Set.
+add_dependencies(${PROJECT_NAME} generate-opendlv-header)
+add_dependencies(${PROJECT_NAME} generate-cluon-msc)
 
 target_link_libraries(${PROJECT_NAME} 
     ${LIBRARIES}
     steering_common
 )
 
-# Add dependency to OpenDLV Standard Message Set.
-add_custom_target(generate_opendlv_standard_message_set_hpp DEPENDS ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp)
-add_dependencies(${PROJECT_NAME} generate_opendlv_standard_message_set_hpp)
-
-################################################################################
-# Install executable.
-
+# Install executable
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ${PROJECT_NAME})
 
+# Test executable
 add_executable(${PROJECT_NAME}-Runner src/test-template.cpp src/istrue.cpp)
+
+add_dependencies(${PROJECT_NAME}-Runner generate-opendlv-header)
 
 target_link_libraries(${PROJECT_NAME}-Runner 
     ${LIBRARIES}

@@ -1,4 +1,4 @@
-# Copyright (C) 2025  Christian Berger
+# Copyright (C) 2025 Christian Berger
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -7,11 +7,11 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 # Which Docker image shall be used on the GitLab runner?
 image: docker:24.0.2
@@ -23,7 +23,7 @@ variables:
   semver_pattern: '/^v([0-9]+)\.([0-9]+)\.([0-9]+)?$/'
 
 services:
- - name: docker:24.0.2-dind
+  - name: docker:24.0.2-dind
 
 stages:
   - performance
@@ -36,11 +36,9 @@ before_script:
   - docker run --privileged --rm tonistiigi/binfmt --install all
   - docker info
   - echo $CI_REGISTRY_USER $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"  
-  
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
 
 # This section runs a performance tests the steering angle algorithm
-
 performance:
   tags:
     - docker-group6
@@ -53,17 +51,17 @@ performance:
     - apk add --no-cache gnuplot curl unzip git jq
   script:
     - cd cpp-opencv/
-    - docker build -f performance/Dockerfile -t performance:latest . 
+    - docker build -f performance/Dockerfile -t performance:latest .
     - cd performance/
     - chmod +x run_performance_test.sh
-    - mkdir -p plots 
+    - mkdir -p plots
     - ./run_performance_test.sh "${CI_COMMIT_SHORT_SHA}"
   artifacts:
     paths:
       - cpp-opencv/performance/plots/
       - cpp-opencv/performance/previous_plots/
     expire_in: 1 week
-    when: always
+  when: always
 
 # This section describes what shall be done to build and test the project.
 build:
@@ -77,34 +75,39 @@ build:
     - docker buildx inspect builder --bootstrap
     - docker buildx build --platform linux/amd64,linux/arm64 -f main/Dockerfile -t "$CI_REGISTRY_IMAGE:latest" .
 
-
 test-coverage:
   tags:
     - docker-group6
   image: ubuntu:18.04
   stage: test
-  before_script: []  
+  before_script: []
   script:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get install -y cmake g++ make lcov git perl gzip ca-certificates build-essential libopencv-dev libopencv-core3.2 libopencv-highgui3.2 libopencv-imgproc3.2
-    - cd cpp-opencv/main
-    - mkdir -p build && cd build
+    - cd cpp-opencv
+    # Debug: show directory structure
+    - echo "Current directory structure:"
+    - ls -la
+    # Debug: ensure common directory exists
+    - echo "Checking for common directory:"
+    - ls -la common || echo "Common directory not found!"
+    # Create build directory in main and run the build
+    - mkdir -p main/build && cd main/build
     - cmake -DCODE_COVERAGE=ON ..
     - cmake --build . --target generate-cluon-msc
     - cmake --build . --target generate-opendlv-header
     - make
-    - ctest 
+    - ctest
     - lcov --capture --directory . --output-file coverage.info
-    - lcov --remove coverage.info '/usr/*' '*/´test-template.cpp' '*/catch.hpp' --output-file coverage_filtered.info
+    - lcov --remove coverage.info '/usr/*' '*/test-template.cpp' '*/catch.hpp' --output-file coverage_filtered.info
     - mkdir -p coverage-report
     - genhtml coverage_filtered.info --output-directory coverage-report
     - lcov --list coverage.info
   artifacts:
     paths:
-      - cpp-opencv/build/coverage-report
-    expire_in: 2 months 
+      - cpp-opencv/main/build/coverage-report
+    expire_in: 2 months
   coverage: '/^\s*lines.*:\s*([\d.]+)%/'
-
 
 # This section describes what shall be done to deploy artefacts from the project.
 release:
@@ -113,12 +116,10 @@ release:
   stage: deploy
   rules:
     - if: '$CI_COMMIT_TAG =~ $semver_pattern'
-      when: always
+  when: always
   script:
-   - cd cpp-opencv/
-   - docker buildx create --name builder
-   - docker buildx use builder
-   - docker buildx inspect builder --bootstrap
-   - docker buildx build --platform linux/amd64,linux/arm64 -f main/Dockerfile -t "$CI_REGISTRY_IMAGE:latest" --push .
-
-  
+    - cd cpp-opencv/
+    - docker buildx create --name builder
+    - docker buildx use builder
+    - docker buildx inspect builder --bootstrap
+    - docker buildx build --platform linux/amd64,linux/arm64 -f main/Dockerfile -t "$CI_REGISTRY_IMAGE:latest" --push .
