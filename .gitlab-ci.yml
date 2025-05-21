@@ -61,6 +61,7 @@ performance:
   artifacts:
     paths:
       - cpp-opencv/performance/plots/
+      - cpp-opencv/performance/previous_plots/
     expire_in: 1 week
     when: always
 
