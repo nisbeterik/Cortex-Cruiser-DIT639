@@ -14,25 +14,29 @@ if [ ! -d "${RECORDING_DIR}" ]; then
   echo "Error: Directory not found at ${RECORDING_DIR}"
   exit 1
 fi
-
 # Attempt to fetch previous jobs if CI is running
 if [ -n "$CI" ]; then
-  echo "Running in CI environment, attempting to fetch previous jobs..."
-  echo "GitLab API URL: $CI_API_V4_URL"
-  echo "GitLab Project ID: $CI_PROJECT_ID"
-
-  response=$(curl -sS --header "PRIVATE-TOKEN: $CI_API_TOKEN" \
-    "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs")
+  echo "Running in CI environment, attempting to fetch previous performance jobs..."
+  
+  # Fetch only successful performance jobs, sorted by latest first
+  response=$(curl -sS --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+    "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs?scope[]=success&per_page=1&job_name=performance")
 
   if [ $? -ne 0 ]; then
     echo "Failed to fetch previous jobs from GitLab API"
     exit 1
   fi
 
-  echo "Response from GitLab API:"
-  echo "$response"
-  echo "----------------------------------"
+  # Extract the job ID from the response
+  performance_job_id=$(echo "$response" | jq -r '.[0].id' 2>/dev/null)
+
+  if [ -n "$performance_job_id" ] && [ "$performance_job_id" != "null" ]; then
+    echo "Latest successful performance job ID: $performance_job_id"
+  else
+    echo "No previous successful performance jobs found"
+  fi
 fi
+
 
 # Process each .rec file
 for rec_file in "${RECORDING_DIR}"/*.rec; do
