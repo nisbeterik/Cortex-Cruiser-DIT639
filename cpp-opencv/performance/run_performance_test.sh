@@ -19,7 +19,7 @@ fi
 if [ -n "$CI" ]; then
   echo "Running in CI environment, attempting to fetch previous jobs..."
 
-  response=$(curl -sS --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+  response=$(curl -sS --header "JOB-TOKEN: $CI_JOB_TOKEN" \
     "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs")
 
   if [ $? -ne 0 ]; then
