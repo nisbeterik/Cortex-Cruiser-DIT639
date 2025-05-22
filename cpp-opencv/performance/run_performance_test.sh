@@ -5,6 +5,7 @@ OUTPUT_DIR="plots"
 CSV_OUTPUT_DIR="output"
 PREVIOUS_OUTPUT_DIR="previous_plots"
 PREVIOUS_CSV_DIR="previous_output" 
+COMMIT_HASH="$1"
 
 # Create directories if they don't exist
 mkdir -p "${OUTPUT_DIR}"
