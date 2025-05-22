@@ -1,35 +1,34 @@
-# Set the output format
-set terminal pngcairo size 1024,768 enhanced font 'Arial,14'
-set output 'output_plot.png'
+#!/usr/bin/gnuplot -persist
 
-# Set titles and labels
-set title "Steering vs. Ground Truth Over Time"
-set xlabel "Timestamp (microseconds)"
-set ylabel "Values"
+# Set output to PNG with dynamic filename
+set terminal png size 1200,800 
+if (!exists("output_png")) output_png = 'plot.png'
+set output output_png
 
-# Set grid and key
+# Data format: timestamp;groundTruth;groundSteering;accuracy
+set datafile separator ';'
+
+# Read piped data, filter valid lines, and extract last accuracy
+valid_data = system("cat /dev/stdin | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$'")
+set print $dummy
+print valid_data
+set print
+
+# Get last accuracy value
+stats $dummy using 4 nooutput
+last_accuracy = STATS_max
+
+# Remove time formatting and use raw timestamp values
+unset xdata
+unset timefmt
+unset format x
+
+# Labels and title
+set title "Group 06 - Cortex Cruiser"
+set xlabel "Timestamp" 
+set ylabel "Value"
 set grid
-set key outside
 
-# Specify the separator and skip the header row
-set datafile separator ","
-set datafile missing "NaN" # Handle any missing data gracefully
-set key autotitle columnhead # Use column headers as legend titles
-
-# Skip the header row by starting plotting from the second line
-plot 'computed_output.csv' every ::1 using 1:2 with lines title "Ground Steering" lc rgb "red", \
-     'computed_output.csv' every ::1 using 1:3 with lines title "Ground Truth" lc rgb "blue"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Plot using raw timestamp values
+plot $dummy using ($1/1e6):2 with lines lw 1 title "groundTruth", \
+     $dummy using ($1/1e6):3 with lines lw 2 title "groundSteering"
