@@ -41,7 +41,7 @@ before_script:
 # This section runs a performance tests the steering angle algorithm
 performance:
   tags:
-    - docker-group6
+    - docker-build
   stage: performance
   image: docker:24.0.2
   services:
@@ -67,7 +67,7 @@ performance:
 # This section describes what shall be done to build and test the project.
 build:
   tags:
-    - docker-group6
+    - docker-build
   stage: build
   script:
     - cd cpp-opencv/
@@ -78,7 +78,7 @@ build:
 
 test-coverage:
   tags:
-    - docker-group6
+    - docker-build
   image: ubuntu:18.04
   stage: test
   before_script: []
@@ -113,7 +113,7 @@ test-coverage:
 # This section describes what shall be done to deploy artefacts from the project.
 release:
   tags:
-    - docker-group6
+    - docker-build
   stage: deploy
   rules:
     - if: '$CI_COMMIT_TAG =~ $semver_pattern'
