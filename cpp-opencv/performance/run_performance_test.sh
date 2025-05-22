@@ -1,6 +1,6 @@
 #!/bin/sh
 
-RECORDING_DIR="src/automation"
+RECORDING_DIR="src/recordings"
 OUTPUT_DIR="plots"
 CSV_OUTPUT_DIR="output"
 PREVIOUS_OUTPUT_DIR="previous_plots"
