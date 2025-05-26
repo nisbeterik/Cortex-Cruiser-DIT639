@@ -4,19 +4,20 @@ RECORDING_DIR="src/recordings"
 OUTPUT_DIR="plots"
 CSV_OUTPUT_DIR="output"
 PREVIOUS_OUTPUT_DIR="previous_plots"
+PREVIOUS_CSV_DIR="previous_output" 
 COMMIT_HASH="$1"
 
 # Create directories if they don't exist
 mkdir -p "${OUTPUT_DIR}"
 mkdir -p "${CSV_OUTPUT_DIR}" 
 mkdir -p "${PREVIOUS_OUTPUT_DIR}"
+mkdir -p "${PREVIOUS_CSV_DIR}"
 
 # Verify recording directory exists
 if [ ! -d "${RECORDING_DIR}" ]; then
   echo "Error: Directory not found at ${RECORDING_DIR}"
   exit 1
 fi
-
 
 # Attempt to fetch previous jobs if CI is running
 if [ -n "$CI" ]; then
@@ -69,20 +70,7 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   echo "Plot will be saved to: ${output_png}"
   echo "CSV will be saved to: ${output_csv}"
   
-  # Find matching previous CSV file
-  previous_csv="${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output/${filename}_*.csv"
-  
-  if [ -f ${previous_csv} ]; then
-    previous_commit=$(basename "${previous_csv}" .csv | awk -F'_' '{print $NF}')
-    echo "Found previous CSV file: ${previous_csv}"
-    echo "Previous commit hash: ${previous_commit}"
-  else
-    echo "No previous CSV file found for ${filename}"
-  fi
-  
- # Process the recording and generate plot
-{
-  # Pipe the docker output (4 semicolon-separated values)
+  # Process the recording and generate plot
   docker run \
     -v "$(pwd)/${RECORDING_DIR}:/data" \
     -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \

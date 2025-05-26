@@ -5,32 +5,25 @@ set terminal png size 1200,800
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
-# Both piped data and CSV files now use semicolons
+# Data format: timestamp;groundTruth;groundSteering;accuracy
 set datafile separator ';'
 
-# Read piped data and separate into current and previous datasets
-current_data = ""
-previous_data = ""
+# Read piped data, filter valid lines, and extract last accuracy
+valid_data = system("cat /dev/stdin | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$'")
 set print $dummy
-do for [line in system("cat /dev/stdin")] {
-  if (strstrt(line, ";previous") > 0) {
-    print substr(line, 1, strstrt(line, ";previous")-1)
-    previous_data = previous_data.line."\n"
-  } else {
-    print line
-    current_data = current_data.line."\n"
-  }
-}
+print valid_data
 set print
 
-# Get last accuracy value from current data
+# Get last accuracy value
 stats $dummy using 4 nooutput
 last_accuracy = STATS_max
 
-# Set up plot
+# Remove time formatting and use raw timestamp values
 unset xdata
 unset timefmt
 unset format x
+
+# Labels and title
 set title "Group 06 - Cortex Cruiser"
 set xlabel "Timestamp" 
 set ylabel "Value"
