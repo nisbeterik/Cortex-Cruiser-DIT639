@@ -10,6 +10,7 @@ COMMIT_HASH="$1"
 mkdir -p "${OUTPUT_DIR}"
 mkdir -p "${CSV_OUTPUT_DIR}" 
 mkdir -p "${PREVIOUS_OUTPUT_DIR}"
+chmod +x combine.sh
 
 # Verify recording directory exists
 if [ ! -d "${RECORDING_DIR}" ]; then
