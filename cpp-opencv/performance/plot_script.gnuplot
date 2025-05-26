@@ -1,34 +1,40 @@
-#!/usr/bin/gnuplot -persist
-
-# Set output to PNG with dynamic filename
-set terminal png size 1200,800 
+# Output settings
+set terminal png size 1000,600
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
-# Data format: timestamp;groundTruth;groundSteering;accuracy
-set datafile separator ';'
+# Title and labels
+set title "Steering Values Over Time"
+set xlabel "Timestamp (μs)" offset 0,-1
+set ylabel "Steering Value"
 
-# Read piped data, filter valid lines, and extract last accuracy
-valid_data = system("cat /dev/stdin | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$'")
-set print $dummy
-print valid_data
-set print
+# Grid and border styling
+set grid linecolor rgb "#dddddd" linewidth 0.5
+set border linewidth 1.5
 
-# Get last accuracy value
-stats $dummy using 4 nooutput
-last_accuracy = STATS_max
+# Data format
+set datafile separator ','
 
-# Remove time formatting and use raw timestamp values
+# X-axis configuration (raw microseconds)
 unset xdata
 unset timefmt
 unset format x
 
-# Labels and title
-set title "Group 06 - Cortex Cruiser"
-set xlabel "Timestamp" 
-set ylabel "Value"
-set grid
+# Rotate x-axis labels and adjust spacing
+set xtics font ",8"  # Smaller font for timestamps
 
-# Plot using raw timestamp values
-plot $dummy using ($1/1e6):2 with lines lw 1 title "groundTruth", \
-     $dummy using ($1/1e6):3 with lines lw 2 title "groundSteering"
+# Margins and layout
+set bmargin 5
+set lmargin 10
+set rmargin 10
+set tmargin 3
+
+# Line styles
+set style line 1 linewidth 2 linecolor rgb "#0060ad"  # Ground Truth
+set style line 2 linewidth 2 linecolor rgb "#dd0000"  # Ground Steering
+set style line 3 linewidth 2 linecolor rgb "#00aa00"  # Previous Ground Steering
+
+# Plot command
+plot 'comb.csv' using 1:2 with lines linestyle 1 title 'Ground Truth', \
+     '' using 1:3 with lines linestyle 2 title 'Ground Steering', \
+     '' using 1:4 with lines linestyle 3 title 'Previous Ground Steering'
