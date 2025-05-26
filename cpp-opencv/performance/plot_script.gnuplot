@@ -5,18 +5,14 @@ set terminal png size 1200,800
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
-# Data format: timestamp;groundTruth;groundSteering;accuracy
-set datafile separator ';'
+# Data format: timestamp,groundTruth,groundSteering,prevGroundSteering
+set datafile separator ','
 
-# Read piped data, filter valid lines, and extract last accuracy
-valid_data = system("cat /dev/stdin | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$'")
+# Read piped data, filter valid lines
+valid_data = system("cat /dev/stdin | grep -E '^[0-9]+,-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$'")
 set print $dummy
 print valid_data
 set print
-
-# Get last accuracy value
-stats $dummy using 4 nooutput
-last_accuracy = STATS_max
 
 # Remove time formatting and use raw timestamp values
 unset xdata
@@ -25,10 +21,14 @@ unset format x
 
 # Labels and title
 set title "Group 06 - Cortex Cruiser"
-set xlabel "Timestamp" 
-set ylabel "Value"
+set xlabel "Timestamp (seconds)" 
+set ylabel "Steering Value"
 set grid
 
-# Plot using raw timestamp values
-plot $dummy using ($1/1e6):2 with lines lw 1 title "groundTruth", \
-     $dummy using ($1/1e6):3 with lines lw 2 title "groundSteering"
+# Plot using raw timestamp values (converted to seconds)
+plot $dummy using ($1/1e6):2 with lines lw 2 title "Ground Truth", \
+     $dummy using ($1/1e6):3 with lines lw 2 title "Current Steering", \
+     $dummy using ($1/1e6):4 with lines lw 2 dashtype 2 title "Previous Steering"
+
+# Add legend
+set key top left
