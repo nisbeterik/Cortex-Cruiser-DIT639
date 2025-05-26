@@ -5,44 +5,38 @@ set terminal png size 1200,800 font ",10"
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
-# Read piped data (semicolon-separated)
-set datafile separator ';'
-valid_data = system("cat /dev/stdin | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$'")
-set print $dummy
-print valid_data
-set print
-
-# Get last accuracy value
-stats $dummy using 4 nooutput
-last_accuracy = STATS_max
-
-# Remove time formatting
-unset xdata
-unset timefmt
-unset format x
+# Data format configuration
+set datafile separator ','
 
 # Labels and title
 set title "Group 06 - Cortex Cruiser"
-set xlabel "Timestamp" 
+set xlabel "Timestamp (ms)" 
 set ylabel "Value"
 set grid
 
 # Plot configuration
-csv_path = 'output/'.csv_file
+plot_cmd = "plot "
+plot_title = ""
 
-# First check if CSV exists
-if (system("[ -f '".csv_path."' ]") == 0) {
-    # Set comma separator just for CSV file
-    set table $csv_data
-    set datafile separator ','
-    plot csv_path every ::1 using 1:2 with table
-    unset table
-    set datafile separator ';'  # Reset to semicolon for piped data
-    
-    plot $dummy using ($1/1e6):2 with lines lw 1 title "groundTruth", \
-         $dummy using ($1/1e6):3 with lines lw 2 title "groundSteering (piped)", \
-         $csv_data using ($1/1e6):2 with lines lw 2 title "groundSteering (file)"
-} else {
-    plot $dummy using ($1/1e6):2 with lines lw 1 title "groundTruth", \
-         $dummy using ($1/1e6):3 with lines lw 2 title "groundSteering (piped)"
+# Plot current data if exists
+if (strlen(current_csv) > 0 && system("[ -f '".current_csv."' ]") == 0) {
+  plot_cmd = plot_cmd."'".current_csv."' using ($1/1e6):2 with lines lw 2 title 'Ground Truth (current)', "
+  plot_cmd = plot_cmd."'".current_csv."' using ($1/1e6):3 with lines lw 2 title 'Ground Steering (current)', "
 }
+
+# Plot previous data if exists
+if (strlen(previous_csv) > 0 && system("[ -f '".previous_csv."' ]") == 0) {
+  previous_label = system("basename ".previous_csv." | cut -d'_' -f2 | cut -d'.' -f1")
+  plot_cmd = plot_cmd."'".previous_csv."' using ($1/1e6):3 with lines lw 2 dt 2 title 'Ground Steering (".previous_label.")', "
+}
+
+# Remove trailing comma and space
+if (strlen(plot_cmd) > 5) {
+  plot_cmd = plot_cmd[1:strlen(plot_cmd)-2]
+} else {
+  print "Error: No valid data to plot"
+  exit 1
+}
+
+# Execute the plot command
+eval(plot_cmd)
