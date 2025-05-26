@@ -39,7 +39,7 @@ before_script:
   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
 
 # This section runs a performance tests the steering angle algorithm
-performance:
+eriksprivatestage:
   tags:
     - docker-group6
   stage: eriksprivatestage
