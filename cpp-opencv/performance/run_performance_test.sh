@@ -94,14 +94,40 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
     # Process the recording and generate plot
     if [ -n "$previous_csv_file" ] && [ -f "$previous_csv_file" ]; then
         echo "Using previous CSV for ${filename}: $previous_csv_file"
-        docker run \
-            -v "$(pwd)/${RECORDING_DIR}:/data" \
-            -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \
-            performance:latest \
-            --rec="/data/${filename}.rec" \
-            --output="/output/${filename}_${COMMIT_HASH}.csv" \
-        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$' \
-        | gnuplot -e "output_png='${output_png}'; previous_csv='${previous_csv_file}'" -c plot_script.gnuplot
+        # Create a combined input by concatenating current piped data with previous data
+        {
+            docker run \
+                -v "$(pwd)/${RECORDING_DIR}:/data" \
+                -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \
+                performance:latest \
+                --rec="/data/${filename}.rec" \
+                --output="/output/${filename}_${COMMIT_HASH}.csv" \
+            | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+'
+    
+    if [ $? -ne 0 ]; then
+        echo "Error processing ${filename}.rec"
+        exit 1
+    fi
+    
+    echo "Successfully generated: ${output_png} and ${output_csv}"
+    echo "----------------------------------"
+done
+
+echo "All recordings processed successfully"
+            echo "PREVIOUS_DATA_MARKER"
+            cat "$previous_csv_file" | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+'
+    
+    if [ $? -ne 0 ]; then
+        echo "Error processing ${filename}.rec"
+        exit 1
+    fi
+    
+    echo "Successfully generated: ${output_png} and ${output_csv}"
+    echo "----------------------------------"
+done
+
+echo "All recordings processed successfully"
+        } | gnuplot -e "output_png='${output_png}'; has_previous=1" -c plot_script.gnuplot
     else
         echo "No previous CSV found for ${filename}, plotting current data only"
         docker run \
@@ -110,8 +136,19 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
             performance:latest \
             --rec="/data/${filename}.rec" \
             --output="/output/${filename}_${COMMIT_HASH}.csv" \
-        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$' \
-        | gnuplot -e "output_png='${output_png}'" -c plot_script.gnuplot
+        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+'
+    
+    if [ $? -ne 0 ]; then
+        echo "Error processing ${filename}.rec"
+        exit 1
+    fi
+    
+    echo "Successfully generated: ${output_png} and ${output_csv}"
+    echo "----------------------------------"
+done
+
+echo "All recordings processed successfully" \
+        | gnuplot -e "output_png='${output_png}'; has_previous=0" -c plot_script.gnuplot
     fi
     
     if [ $? -ne 0 ]; then
