@@ -76,20 +76,20 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   echo "Plot will be saved to: ${output_png}"
   echo "CSV will be saved to: ${output_csv}"
   
-  # Print matching previous CSV files (excluding those with _current)
+  # Find the most recent matching previous CSV file (excluding _current)
   if [ -d "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" ]; then
-    echo "Looking for previous CSV files matching pattern: ${filename}*.csv (excluding _current files)"
-    previous_csv_files=$(find "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" -name "${filename}*.csv" ! -name "*_current.csv")
+    echo "Looking for most recent previous CSV file matching: ${filename}*.csv (excluding _current files)"
+    previous_csv_file=$(find "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" -name "${filename}*.csv" ! -name "*_current.csv" -printf "%T@ %p\n" | sort -n | tail -1 | cut -f2- -d" ")
     
-    if [ -n "$previous_csv_files" ]; then
-      echo "Found previous CSV files:"
-      echo "$previous_csv_files"
+    if [ -n "$previous_csv_file" ]; then
+      echo "Found previous CSV file: ${previous_csv_file}"
     else
-      echo "No previous CSV files found for ${filename} (excluding _current files)"
+      echo "No previous CSV file found for ${filename} (excluding _current files)"
     fi
   else
     echo "Previous output directory not found: ${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output"
   fi
+
   
   # Process the recording and generate plot
   docker run \
