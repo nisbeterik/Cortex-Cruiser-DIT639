@@ -22,6 +22,7 @@ unset format x
 
 # Rotate x-axis labels and adjust spacing
 set xtics font ",8"  # Smaller font for timestamps
+set xtics 1e15  # Show ticks every 1,000,000,000,000 μs (adjust as needed)
 
 # Margins and layout
 set bmargin 5
