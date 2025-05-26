@@ -48,6 +48,7 @@ if [ -n "$CI" ]; then
     curl -sS --header "PRIVATE-TOKEN: $CI_API_TOKEN" \
       -o "${PREVIOUS_OUTPUT_DIR}/artifacts.zip" \
       "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/$previous_perf_job_id/artifacts"
+    ls cpp-opencv/performance/$OUTPUT_DIR
     
     if [ $? -eq 0 ]; then
       echo "Successfully downloaded artifacts"
