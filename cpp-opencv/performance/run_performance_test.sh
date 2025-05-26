@@ -3,28 +3,26 @@
 RECORDING_DIR="src/recordings"
 OUTPUT_DIR="plots"
 CSV_OUTPUT_DIR="output"
+CURRENT_CSV_DIR="current"
 PREVIOUS_OUTPUT_DIR="previous_plots"
 PREVIOUS_CSV_DIR="previous_output"
 COMMIT_HASH="$1"
-
-# Validate commit hash parameter
-if [ -z "$COMMIT_HASH" ]; then
-    echo "Error: Commit hash parameter is required"
-    echo "Usage: $0 <commit_hash>"
-    exit 1
-fi
+COMBINED_CSV_DIR="combined_csv"
 
 # Create directories if they don't exist
 mkdir -p "${OUTPUT_DIR}"
 mkdir -p "${CSV_OUTPUT_DIR}"
 mkdir -p "${PREVIOUS_OUTPUT_DIR}"
 mkdir -p "${PREVIOUS_CSV_DIR}"
+mkdir -p "${COMBINED_CSV_DIR}"
+mkdir -p "${CURRENT_CSV_DIR}"
 
 # Verify recording directory exists
 if [ ! -d "${RECORDING_DIR}" ]; then
     echo "Error: Directory not found at ${RECORDING_DIR}"
     exit 1
 fi
+
 
 echo "=== Step 1: Generating CSV files from recordings ==="
 

@@ -32,17 +32,34 @@ int32_t main(int32_t argc, char **argv)
 
     // Add output file path handling
     std::string outputPath = "output.csv";  // Default
+    std::string currentOutputPath = "current_output.csv";
     if (commandlineArguments.count("output") > 0) {
         outputPath = commandlineArguments["output"];
+        // Insert "_current" before the file extension
+        size_t dotPos = outputPath.find_last_of(".");
+        if (dotPos != std::string::npos) {
+            currentOutputPath = outputPath.substr(0, dotPos) + "_current" + outputPath.substr(dotPos);
+        } else {
+            currentOutputPath = outputPath + "_current";
+        }
+    } else {
+        currentOutputPath = "output_current.csv";
     }
-
     // Open file with error checking
     std::ofstream computedFile(outputPath);
     if (!computedFile.is_open()) {
         std::cerr << "Error: Could not open output file at " << outputPath << std::endl;
         return 1;
     }
-    computedFile << "timestamp,groundSteering,groundTruth,accuracy\n";
+    computedFile << "prevGroundSteering\n";
+
+    std::ofstream computedCurrent(currentOutputPath);
+     
+    if (!computedCurrent.is_open()) {
+        std::cerr << "Error: Could not open output file at " << currentOutputPath << std::endl;
+        return 1;
+    } 
+    computedCurrent << "timestamp,groundTruth,groundSteering\n";
 
     const std::string recFile = commandlineArguments["rec"];
     bool verbose = (commandlineArguments.count("verbose") != 0);
@@ -141,8 +158,9 @@ int32_t main(int32_t argc, char **argv)
                                 if (totalValid > 0){
                                     acc = ((double)withinRange / totalValid) * 100.0;
                                 }
-                                // std::cout << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << ";" << acc << std::endl;
-                                computedFile << ts_ms << "," << calculatedSteering << "," << gsr.groundSteering() << "," << acc << "\n";
+                                std::cout << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << ";" << acc << std::endl;
+                                computedFile << calculatedSteering << "\n";
+                                computedCurrent << ts_ms << "," << gsr.groundSteering() << "," << calculatedSteering << "\n";
                                 hasAngle = false;
                             }
                         }
