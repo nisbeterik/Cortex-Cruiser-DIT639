@@ -69,29 +69,33 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   echo "CSV will be saved to: ${output_csv}"
   
   # Find matching previous CSV file
-  previous_csv_pattern="${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output/${filename}_*.csv"
-  previous_csv_files=$(ls ${previous_csv_pattern} 2>/dev/null)
+  previous_csv="${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output/${filename}_*.csv"
   
-  if [ -n "$previous_csv_files" ]; then
-    # Take the first match if there are multiple
-    previous_csv=$(echo "$previous_csv_files" | head -n 1)
-    previous_commit=$(basename "$previous_csv" .csv | awk -F'_' '{print $NF}')
+  if [ -f ${previous_csv} ]; then
+    previous_commit=$(basename "${previous_csv}" .csv | awk -F'_' '{print $NF}')
     echo "Found previous CSV file: ${previous_csv}"
     echo "Previous commit hash: ${previous_commit}"
   else
     echo "No previous CSV file found for ${filename}"
   fi
   
-  # Process the recording and generate plot
+ # Process the recording and generate plot
+{
+  # Pipe the docker output (4 semicolon-separated values)
   docker run \
     -v "$(pwd)/${RECORDING_DIR}:/data" \
     -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \
     performance:latest \
     --rec="/data/${filename}.rec" \
     --output="/output/${filename}_${COMMIT_HASH}.csv" \
-    | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$' \
-    | gnuplot -e "output_png='${output_png}'" -c plot_script.gnuplot
-  
+    | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$'
+    
+  # If previous CSV exists, pipe its data with modified format
+  if [ -f "${previous_csv}" ]; then
+    awk -F',' 'NR>1 {print $1";0;"$2";0;previous"}' "${previous_csv}"
+  fi
+} | gnuplot -e "output_png='${output_png}'" -c plot_script.gnuplot
+
   if [ $? -ne 0 ]; then
     echo "Error processing ${filename}.rec"
     exit 1
