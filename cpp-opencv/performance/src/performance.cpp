@@ -158,7 +158,6 @@ int32_t main(int32_t argc, char **argv)
                                 if (totalValid > 0){
                                     acc = ((double)withinRange / totalValid) * 100.0;
                                 }
-                                std::cout << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << ";" << acc << std::endl;
                                 computedFile << calculatedSteering << "\n";
                                 computedCurrent << ts_ms << "," << gsr.groundSteering() << "," << calculatedSteering << "\n";
                                 hasAngle = false;
@@ -180,5 +179,6 @@ int32_t main(int32_t argc, char **argv)
         }
     }
     computedFile.close();
+    std::cout << "Accuracy: " << acc << "%" << std::endl;
     return 0;
 }
