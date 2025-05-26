@@ -160,7 +160,7 @@ int32_t main(int32_t argc, char **argv)
                                 }
                                 std::cout << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << ";" << acc << std::endl;
                                 computedFile << calculatedSteering << "\n";
-                                computedCurrent << ts_ms << "," << << gsr.groundSteering() << "," << calculatedSteering "\n";
+                                computedCurrent << ts_ms << "," << gsr.groundSteering() << "," << calculatedSteering << "\n";
                                 hasAngle = false;
                             }
                         }
