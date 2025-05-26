@@ -58,7 +58,7 @@ if [ -n "$CI" ]; then
       unzip -qo "${PREVIOUS_OUTPUT_DIR}/artifacts.zip" -d "${PREVIOUS_OUTPUT_DIR}"
       echo "Artifacts extracted to ${PREVIOUS_OUTPUT_DIR}"
       echo "Previous output directory contents"
-      ls cpp-opencv/performance/$PREVIOUS_OUTPUT_DIR
+      ls $PREVIOUS_OUTPUT_DIR/cpp-opencv/performance/$CSV_OUTPUT_DIR
     else
       echo "Failed to download artifacts from previous job"
     fi
