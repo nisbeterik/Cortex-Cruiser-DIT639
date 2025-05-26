@@ -93,7 +93,7 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   # Find the most recent matching previous CSV file (excluding _current)
   if [ -d "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" ]; then
     echo "Looking for most recent previous CSV file matching: ${filename}*.csv (excluding _current files)"
-    previous_csv_file=$(find "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" -name "${filename}*.csv" ! -name "*_current.csv" -printf "%T@ %p\n" | sort -n | tail -1 | cut -f2- -d" ")
+    previous_csv_file=$(find "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" -name "${filename}*.csv" ! -name "*_current.csv")
     
     if [ -n "$previous_csv_file" ]; then
       echo "Found previous CSV file: ${previous_csv_file}"
