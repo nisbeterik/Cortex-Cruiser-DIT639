@@ -21,14 +21,14 @@ unset timefmt
 unset format x
 
 # Rotate x-axis labels and adjust spacing
-set xtics font ",8"  # Smaller font for timestamps
-set format x "%.0f"
-set xtics font ",7"
+set xtics font ",6"  
+set xtics autofreq 0, (1e14)  
+
 
 # Margins and layout
-set bmargin 8
-set lmargin 10
-set rmargin 10
+set bmargin 6 
+set lmargin 13
+set rmargin 13
 set tmargin 3
 
 # Line styles
