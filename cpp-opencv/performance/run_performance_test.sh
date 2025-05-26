@@ -38,7 +38,7 @@ if [ -n "$CI" ]; then
   fi
 
   # Extract the ID of the latest successful job in the "performance" stage
-  previous_perf_job_id=$(echo "$response" | jq '[.[] | select(.stage == "performance" and .status == "success")] | first | .id')
+  previous_perf_job_id=$(echo "$response" | jq '[.[] | select(.stage == "eriksprivatestage" and .status == "success")] | first | .id')
 
   if [ "$previous_perf_job_id" = "null" ] || [ -z "$previous_perf_job_id" ]; then
     echo "No previous successful 'performance' job found."
