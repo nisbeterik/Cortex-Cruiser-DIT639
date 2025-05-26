@@ -16,6 +16,7 @@ if [ ! -d "${RECORDING_DIR}" ]; then
   echo "Error: Directory not found at ${RECORDING_DIR}"
   exit 1
 fi
+
 # Attempt to fetch previous jobs if CI is running
 if [ -n "$CI" ]; then
   echo "Running in CI environment, attempting to fetch previous jobs..."
@@ -37,13 +38,6 @@ if [ -n "$CI" ]; then
     echo "No previous successful 'performance' job found."
   else
     echo "Previous successful 'performance' job ID: $previous_perf_job_id"
-  fi
-
-  echo "----------------------------------"
-  if [ "$previous_perf_job_id" = "null" ] || [ -z "$previous_perf_job_id" ]; then
-    echo "No previous successful 'performance' job found."
-  else
-    echo "Previous successful 'performance' job ID: $previous_perf_job_id"
     
     # Fetch artifacts from the previous job
     echo "Fetching artifacts from previous job..."
@@ -56,13 +50,11 @@ if [ -n "$CI" ]; then
       # Unzip the artifacts
       unzip -qo "${PREVIOUS_OUTPUT_DIR}/artifacts.zip" -d "${PREVIOUS_OUTPUT_DIR}"
       echo "Artifacts extracted to ${PREVIOUS_OUTPUT_DIR}"
-      ls "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" 
     else
       echo "Failed to download artifacts from previous job"
     fi
   fi
 fi
-
 
 # Process each .rec file
 for rec_file in "${RECORDING_DIR}"/*.rec; do
@@ -75,6 +67,20 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   echo "Processing recording file: ${filename}.rec"
   echo "Plot will be saved to: ${output_png}"
   echo "CSV will be saved to: ${output_csv}"
+  
+  # Find matching previous CSV file
+  previous_csv_pattern="${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output/${filename}_*.csv"
+  previous_csv_files=$(ls ${previous_csv_pattern} 2>/dev/null)
+  
+  if [ -n "$previous_csv_files" ]; then
+    # Take the first match if there are multiple
+    previous_csv=$(echo "$previous_csv_files" | head -n 1)
+    previous_commit=$(basename "$previous_csv" .csv | awk -F'_' '{print $NF}')
+    echo "Found previous CSV file: ${previous_csv}"
+    echo "Previous commit hash: ${previous_commit}"
+  else
+    echo "No previous CSV file found for ${filename}"
+  fi
   
   # Process the recording and generate plot
   docker run \
