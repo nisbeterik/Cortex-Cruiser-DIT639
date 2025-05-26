@@ -42,7 +42,7 @@ int32_t main(int32_t argc, char **argv)
         std::cerr << "Error: Could not open output file at " << outputPath << std::endl;
         return 1;
     }
-    computedFile << "timestamp,groundSteering,accuracy\n";
+    computedFile << "timestamp,groundSteering,groundTruth,accuracy\n";
 
     const std::string recFile = commandlineArguments["rec"];
     bool verbose = (commandlineArguments.count("verbose") != 0);
@@ -141,8 +141,8 @@ int32_t main(int32_t argc, char **argv)
                                 if (totalValid > 0){
                                     acc = ((double)withinRange / totalValid) * 100.0;
                                 }
-                                std::cout << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << ";" << acc << std::endl;
-                                computedFile << ts_ms << "," << calculatedSteering << "," << acc << "\n";
+                                // std::cout << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << ";" << acc << std::endl;
+                                computedFile << ts_ms << "," << calculatedSteering << "," << gsr.groundSteering() << "," << acc << "\n";
                                 hasAngle = false;
                             }
                         }

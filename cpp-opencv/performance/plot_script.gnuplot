@@ -1,42 +1,47 @@
-#!/usr/bin/gnuplot -persist
+# plot_script.gnuplot
+# Variables passed from shell script:
+# current_csv - path to current commit CSV
+# previous_csv - path to previous commit CSV (may be empty)
+# output_png - output PNG file path
+# filename - base filename for title
+# commit_hash - current commit hash
 
-# Set output to PNG with dynamic filename
-set terminal png size 1200,800 font ",10"
-if (!exists("output_png")) output_png = 'plot.png'
+# Set terminal and output
+set terminal png size 1200,800 font "Arial,12"
 set output output_png
 
-# Data format configuration
-set datafile separator ','
-
-# Labels and title
-set title "Group 06 - Cortex Cruiser"
-set xlabel "Timestamp (ms)" 
-set ylabel "Value"
+# Set plot styling
 set grid
+set key outside right top
+set xlabel "Timestamp"
+set ylabel "Steering Value"
+set title sprintf("Steering Comparison: %s", filename)
 
-# Plot configuration
-plot_cmd = "plot "
-plot_title = ""
+# Set time format for x-axis if timestamps are in recognizable format
+# Adjust this based on your timestamp format
+set xdata time
+set timefmt "%Y-%m-%d %H:%M:%S"
+set format x "%H:%M:%S"
+set xtics rotate by -45
 
-# Plot current data if exists
-if (strlen(current_csv) > 0 && system("[ -f '".current_csv."' ]") == 0) {
-  plot_cmd = plot_cmd."'".current_csv."' using ($1/1e6):2 with lines lw 2 title 'Ground Truth (current)', "
-  plot_cmd = plot_cmd."'".current_csv."' using ($1/1e6):3 with lines lw 2 title 'Ground Steering (current)', "
-}
+# Define line styles
+set style line 1 lc rgb '#e74c3c' lw 2 pt 7 ps 0.5  # Red for current
+set style line 2 lc rgb '#3498db' lw 2 pt 5 ps 0.5  # Blue for previous  
+set style line 3 lc rgb '#2ecc71' lw 2 pt 9 ps 0.5  # Green for ground truth
 
-# Plot previous data if exists
-if (strlen(previous_csv) > 0 && system("[ -f '".previous_csv."' ]") == 0) {
-  previous_label = system("basename ".previous_csv." | cut -d'_' -f2 | cut -d'.' -f1")
-  plot_cmd = plot_cmd."'".previous_csv."' using ($1/1e6):3 with lines lw 2 dt 2 title 'Ground Steering (".previous_label.")', "
-}
-
-# Remove trailing comma and space
-if (strlen(plot_cmd) > 5) {
-  plot_cmd = plot_cmd[1:strlen(plot_cmd)-2]
+# Check if previous CSV exists and plot accordingly
+if (strlen(previous_csv) > 0) {
+    # Plot all three lines: current, previous, and ground truth
+    plot current_csv using 1:2 with linespoints ls 1 title sprintf("Current (%s)", commit_hash[1:8]), \
+         current_csv using 1:3 with linespoints ls 3 title "Ground Truth", \
+         previous_csv using 1:2 with linespoints ls 2 title "Previous Commit"
 } else {
-  print "Error: No valid data to plot"
-  exit 1
+    # Plot only current and ground truth (no previous data available)
+    plot current_csv using 1:2 with linespoints ls 1 title sprintf("Current (%s)", commit_hash[1:8]), \
+         current_csv using 1:3 with linespoints ls 3 title "Ground Truth"
 }
 
-# Execute the plot command
-eval(plot_cmd)
+# Add some annotations
+set label sprintf("Generated: %s", strftime("%Y-%m-%d %H:%M:%S", time(0))) at graph 0.02, 0.98 font "Arial,10"
+
+print sprintf("Plot saved to: %s", output_png)
