@@ -71,7 +71,7 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   filename=$(basename "${rec_file}" .rec)
   output_png="${OUTPUT_DIR}/${filename}_${COMMIT_HASH}.png"
   output_csv="${CSV_OUTPUT_DIR}/${filename}_${COMMIT_HASH}_current.csv" 
-  combined_csv="${CSV_OUTPUT_DIR}/${filename}_${COMMIT_HASH}_combined.csv"
+  combined_csv="comb.csv"
   
   echo "Processing recording file: ${filename}.rec"
   echo "Plot will be saved to: ${output_png}"
@@ -120,7 +120,7 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
 
   # Generate plot using the selected CSV file
   echo "Generating plot from: ${plotting_csv}"
-  gnuplot -e "output_png='${output_png}'" -c plot_script.gnuplot < "${plotting_csv}"
+  gnuplot -e "output_png='${output_png}'" plot_script.gnuplot
   
   if [ $? -ne 0 ]; then
     echo "Error generating plot"
