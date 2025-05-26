@@ -36,5 +36,5 @@ set style line 3 linewidth 2 linecolor rgb "#00aa00"  # Previous Ground Steering
 
 # Plot command
 plot 'comb.csv' using 1:2 with lines linestyle 1 title 'Ground Truth', \
-     '' using 1:3 with lines linestyle 2 title 'Ground Steering', \
-     '' using 1:4 with lines linestyle 3 title 'Previous Ground Steering'
+     '' using 1:4 with lines linestyle 3 title 'Previous Ground Steering', \
+     '' using 1:3 with lines linestyle 2 title 'Ground Steering'
