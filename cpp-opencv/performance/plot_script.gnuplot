@@ -1,53 +1,34 @@
 #!/usr/bin/gnuplot -persist
+
 # Set output to PNG with dynamic filename
 set terminal png size 1200,800 
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
-# Data format:
-# - Piped data: timestamp;groundTruth;groundSteering;accuracy
-# - CSV data: timestamp;groundSteering (after conversion)
+# Data format: timestamp;groundTruth;groundSteering;accuracy
 set datafile separator ';'
 
-# Read and split piped data
-current_data = ""
-previous_data = ""
-in_previous = 0
+# Read piped data, filter valid lines, and extract last accuracy
+valid_data = system("cat /dev/stdin | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$'")
+set print $dummy
+print valid_data
+set print
 
-# Read from stdin
-while (1) {
-    line = ""
-    line = read("stdin")
-    if (strlen(line) == 0) break
-    
-    if (line eq "PREVIOUS_DATA_MARKER") {
-        in_previous = 1
-    } else {
-        if (!in_previous) {
-            # Current data: timestamp;groundTruth;groundSteering;accuracy
-            current_data = current_data.line."\n"
-        } else {
-            # Previous data: timestamp;groundSteering
-            previous_data = previous_data.line."\n"
-        }
-    }
-}
+# Get last accuracy value
+stats $dummy using 4 nooutput
+last_accuracy = STATS_max
 
-# Plot configuration
+# Remove time formatting and use raw timestamp values
 unset xdata
 unset timefmt
 unset format x
+
+# Labels and title
 set title "Group 06 - Cortex Cruiser"
 set xlabel "Timestamp" 
 set ylabel "Value"
 set grid
 
-# Plot lines
-if (exists("has_previous") && has_previous && strlen(previous_data) > 0) {
-    plot current_data using ($1/1e6):2 with lines lw 2 title "groundTruth", \
-         current_data using ($1/1e6):3 with lines lw 2 title "groundSteering (Current)", \
-         previous_data using ($1/1e6):2 with lines lw 2 title "groundSteering (Previous)"
-} else {
-    plot current_data using ($1/1e6):2 with lines lw 2 title "groundTruth", \
-         current_data using ($1/1e6):3 with lines lw 2 title "groundSteering (Current)"
-}
+# Plot using raw timestamp values
+plot $dummy using ($1/1e6):2 with lines lw 1 title "groundTruth", \
+     $dummy using ($1/1e6):3 with lines lw 2 title "groundSteering"
