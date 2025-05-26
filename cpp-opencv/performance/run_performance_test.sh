@@ -91,35 +91,49 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
         done
     fi
     
-    # Process the recording and generate plot
+# Process the recording and generate plot
 if [ -n "$previous_csv_file" ] && [ -f "$previous_csv_file" ]; then
     echo "Using previous CSV for ${filename}: $previous_csv_file"
-    # Combine current data with previous data
-    {
-        # Current data (from docker, semicolon-delimited)
-        docker run \
-            -v "$(pwd)/${RECORDING_DIR}:/data" \
-            -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \
-            performance:latest \
-            --rec="/data/${filename}.rec" \
-            --output="/output/${filename}_${COMMIT_HASH}.csv" \
-        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+'
-        
-        # Marker and previous data (from CSV, comma-delimited)
-        echo "PREVIOUS_DATA_MARKER"
-        # Convert CSV to semicolon-delimited and drop accuracy column (keep timestamp and groundSteering)
-        awk -F, '{print $1 ";" $2}' "$previous_csv_file" | grep -E '^[0-9]+;-?[0-9.]+'
-    } | gnuplot -e "output_png='${output_png}'; has_previous=1" -c plot_script.gnuplot
-else
-    echo "No previous CSV found for ${filename}, plotting current data only"
+    # Create temp files for gnuplot
+    current_data=$(mktemp)
+    previous_data=$(mktemp)
+    
+    # Get current data
     docker run \
         -v "$(pwd)/${RECORDING_DIR}:/data" \
         -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \
         performance:latest \
         --rec="/data/${filename}.rec" \
         --output="/output/${filename}_${COMMIT_HASH}.csv" \
-    | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+' \
-    | gnuplot -e "output_png='${output_png}'; has_previous=0" -c plot_script.gnuplot
+        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+' > "$current_data"
+    
+    # Get previous data (timestamp and groundSteering only)
+    awk -F, '{print $1 ";" $2}' "$previous_csv_file" | grep -E '^[0-9]+;-?[0-9.]+' > "$previous_data"
+    
+    # Plot with both datasets
+    gnuplot -e "output_png='${output_png}'; \
+                current_data='$current_data'; \
+                previous_data='$previous_data'" \
+            -c plot_script.gnuplot
+    
+    # Clean up temp files
+    rm "$current_data" "$previous_data"
+else
+    echo "No previous CSV found for ${filename}, plotting current data only"
+    current_data=$(mktemp)
+    docker run \
+        -v "$(pwd)/${RECORDING_DIR}:/data" \
+        -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \
+        performance:latest \
+        --rec="/data/${filename}.rec" \
+        --output="/output/${filename}_${COMMIT_HASH}.csv" \
+        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+' > "$current_data"
+    
+    gnuplot -e "output_png='${output_png}'; \
+                current_data='$current_data'" \
+            -c plot_script.gnuplot
+    
+    rm "$current_data"
 fi
     
     if [ $? -ne 0 ]; then
