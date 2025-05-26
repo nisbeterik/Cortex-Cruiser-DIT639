@@ -4,14 +4,12 @@ RECORDING_DIR="src/recordings"
 OUTPUT_DIR="plots"
 CSV_OUTPUT_DIR="output"
 PREVIOUS_OUTPUT_DIR="previous_plots"
-PREVIOUS_CSV_DIR="previous_output" 
 COMMIT_HASH="$1"
 
 # Create directories if they don't exist
 mkdir -p "${OUTPUT_DIR}"
 mkdir -p "${CSV_OUTPUT_DIR}" 
 mkdir -p "${PREVIOUS_OUTPUT_DIR}"
-mkdir -p "${PREVIOUS_CSV_DIR}"
 
 # Verify recording directory exists
 if [ ! -d "${RECORDING_DIR}" ]; then
@@ -58,6 +56,7 @@ if [ -n "$CI" ]; then
       # Unzip the artifacts
       unzip -qo "${PREVIOUS_OUTPUT_DIR}/artifacts.zip" -d "${PREVIOUS_OUTPUT_DIR}"
       echo "Artifacts extracted to ${PREVIOUS_OUTPUT_DIR}"
+      ls "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" 
     else
       echo "Failed to download artifacts from previous job"
     fi
@@ -76,6 +75,21 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   echo "Processing recording file: ${filename}.rec"
   echo "Plot will be saved to: ${output_png}"
   echo "CSV will be saved to: ${output_csv}"
+  
+  # Print matching previous CSV files
+  if [ -d "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" ]; then
+    echo "Looking for previous CSV files matching pattern: ${filename}*.csv"
+    previous_csv_files=$(find "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" -name "${filename}*.csv")
+    
+    if [ -n "$previous_csv_files" ]; then
+      echo "Found previous CSV files:"
+      echo "$previous_csv_files"
+    else
+      echo "No previous CSV files found for ${filename}"
+    fi
+  else
+    echo "Previous output directory not found: ${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output"
+  fi
   
   # Process the recording and generate plot
   docker run \
