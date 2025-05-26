@@ -5,7 +5,7 @@ set output output_png
 
 # Title and labels
 set title "Steering Values Over Time"
-set xlabel "Timestamp (μs)" offset 0,-1
+set xlabel "Timestamp" offset 0,-1
 set ylabel "Steering Value"
 
 # Grid and border styling
@@ -22,10 +22,11 @@ unset format x
 
 # Rotate x-axis labels and adjust spacing
 set xtics font ",8"  # Smaller font for timestamps
-set xtics 1e15  # Show ticks every 1,000,000,000,000 μs (adjust as needed)
+set format x "%.0f"
+set xtics font ",7"
 
 # Margins and layout
-set bmargin 5
+set bmargin 8
 set lmargin 10
 set rmargin 10
 set tmargin 3
