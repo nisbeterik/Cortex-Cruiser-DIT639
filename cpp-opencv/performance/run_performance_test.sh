@@ -76,16 +76,16 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   echo "Plot will be saved to: ${output_png}"
   echo "CSV will be saved to: ${output_csv}"
   
-  # Print matching previous CSV files
+  # Print matching previous CSV files (excluding those with _current)
   if [ -d "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" ]; then
-    echo "Looking for previous CSV files matching pattern: ${filename}*.csv"
-    previous_csv_files=$(find "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" -name "${filename}*.csv")
+    echo "Looking for previous CSV files matching pattern: ${filename}*.csv (excluding _current files)"
+    previous_csv_files=$(find "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" -name "${filename}*.csv" ! -name "*_current.csv")
     
     if [ -n "$previous_csv_files" ]; then
       echo "Found previous CSV files:"
       echo "$previous_csv_files"
     else
-      echo "No previous CSV files found for ${filename}"
+      echo "No previous CSV files found for ${filename} (excluding _current files)"
     fi
   else
     echo "Previous output directory not found: ${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output"
