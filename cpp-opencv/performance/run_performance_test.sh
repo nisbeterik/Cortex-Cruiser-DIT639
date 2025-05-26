@@ -84,7 +84,7 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
     -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \
     performance:latest \
     --rec="/data/${filename}.rec" \
-    --output="/output/${filename}_${COMMIT_HASH}_current.csv"
+    --output="/output/${filename}_${COMMIT_HASH}.csv"
   
   if [ $? -ne 0 ]; then
     echo "Error processing ${filename}.rec"
