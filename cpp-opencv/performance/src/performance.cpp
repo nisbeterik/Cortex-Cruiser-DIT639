@@ -42,7 +42,7 @@ int32_t main(int32_t argc, char **argv)
         std::cerr << "Error: Could not open output file at " << outputPath << std::endl;
         return 1;
     }
-    computedFile << "groundSteering,accuracy\n";
+    computedFile << "timestamp,groundSteering,accuracy\n";
 
     const std::string recFile = commandlineArguments["rec"];
     bool verbose = (commandlineArguments.count("verbose") != 0);
