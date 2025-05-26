@@ -1,7 +1,6 @@
 #!/bin/sh
 
 RECORDING_DIR="src/recordings"
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OUTPUT_DIR="plots"
 CSV_OUTPUT_DIR="output"
 PREVIOUS_OUTPUT_DIR="previous_plots"
@@ -102,8 +101,8 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
       
       # Run combine.sh with current and previous CSV files
       echo "Combining current and previous CSV files..."
-
-      ${SCRIPT_DIR}/combine.sh "${output_csv}" "${previous_csv_file}" "${combined_csv}"
+      sh combine.sh "${output_csv}" "${previous_csv_file}" "${combined_csv}"
+      
       
       if [ $? -ne 0 ]; then
         echo "Error combining CSV files"
