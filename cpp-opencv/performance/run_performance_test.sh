@@ -15,6 +15,7 @@ mkdir -p "${CSV_OUTPUT_DIR}"
 mkdir -p "${PREVIOUS_OUTPUT_DIR}"
 mkdir -p "${PREVIOUS_CSV_DIR}"
 mkdir -p "${COMBINED_CSV_DIR}"
+mkdir -p "${CURRENT_CSV_DIR}"
 
 # Verify recording directory exists
 if [ ! -d "${RECORDING_DIR}" ]; then
