@@ -76,6 +76,21 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   echo "Plot will be saved to: ${output_png}"
   echo "CSV will be saved to: ${output_csv}"
   
+  # Print matching previous CSV files
+  if [ -d "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" ]; then
+    echo "Looking for previous CSV files matching pattern: ${filename}*.csv"
+    previous_csv_files=$(find "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" -name "${filename}*.csv")
+    
+    if [ -n "$previous_csv_files" ]; then
+      echo "Found previous CSV files:"
+      echo "$previous_csv_files"
+    else
+      echo "No previous CSV files found for ${filename}"
+    fi
+  else
+    echo "Previous output directory not found: ${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output"
+  fi
+  
   # Process the recording and generate plot
   docker run \
     -v "$(pwd)/${RECORDING_DIR}:/data" \
