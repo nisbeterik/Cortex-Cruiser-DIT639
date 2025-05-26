@@ -77,38 +77,51 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
     echo "Plot will be saved to: ${output_png}"
     echo "CSV will be saved to: ${output_csv}"
     
-    # Check if previous CSV exists for this filename
-    previous_csv="${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/${CSV_OUTPUT_DIR}/${filename}_*.csv"
-    previous_csv_file=""
-    
-    # Find the previous CSV file (there should be only one matching)
-    for prev_file in $previous_csv; do
-        if [ -f "$prev_file" ]; then
-            previous_csv_file="$prev_file"
-            break
-        fi
-    done
+    # Check if previous CSV directory exists
+    previous_csv_dir="${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/${CSV_OUTPUT_DIR}"
     
     # Process the recording and generate plot
-    if [ -n "$previous_csv_file" ] && [ -f "$previous_csv_file" ]; then
-        echo "Using previous CSV: $previous_csv_file"
+    if [ -d "$previous_csv_dir" ] && [ "$(ls -A $previous_csv_dir/*.csv 2>/dev/null)" ]; then
+        echo "Using previous CSV directory: $previous_csv_dir"
         docker run \
             -v "$(pwd)/${RECORDING_DIR}:/data" \
             -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \
             performance:latest \
             --rec="/data/${filename}.rec" \
             --output="/output/${filename}_${COMMIT_HASH}.csv" \
-        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$' \
-        | gnuplot -e "output_png='${output_png}'; previous_csv='${previous_csv_file}'" -c plot_script.gnuplot
+        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+
+    
+    if [ $? -ne 0 ]; then
+        echo "Error processing ${filename}.rec"
+        exit 1
+    fi
+    
+    echo "Successfully generated: ${output_png} and ${output_csv}"
+    echo "----------------------------------"
+done
+
+echo "All recordings processed successfully" \
+        | gnuplot -e "output_png='${output_png}'; previous_dir='${previous_csv_dir}'" -c plot_script.gnuplot
     else
-        echo "No previous CSV found, plotting current data only"
+        echo "No previous CSV directory found, plotting current data only"
         docker run \
             -v "$(pwd)/${RECORDING_DIR}:/data" \
             -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \
             performance:latest \
             --rec="/data/${filename}.rec" \
             --output="/output/${filename}_${COMMIT_HASH}.csv" \
-        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$' \
+        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+
+    
+    if [ $? -ne 0 ]; then
+        echo "Error processing ${filename}.rec"
+        exit 1
+    fi
+    
+    echo "Successfully generated: ${output_png} and ${output_csv}"
+    echo "----------------------------------"
+done
+
+echo "All recordings processed successfully" \
         | gnuplot -e "output_png='${output_png}'" -c plot_script.gnuplot
     fi
     
