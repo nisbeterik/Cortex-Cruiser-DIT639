@@ -1,7 +1,7 @@
 #include "steering.hpp"
 
 const cv::Scalar BLUE_LOWER(81, 102, 40);
-const cv::Scalar BLUE_UPPER(100, 255, 123);
+const cv::Scalar BLUE_UPPER(148, 255, 123);
 const cv::Scalar YELLOW_LOWER(16, 0, 123);
 const cv::Scalar YELLOW_UPPER(90, 255, 255);
 
