@@ -1,5 +1,5 @@
 # Output settings
-set terminal png size 1000,600
+set terminal png size 1200,600
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
@@ -22,7 +22,6 @@ unset format x
 
 # Rotate x-axis labels and adjust spacing
 set xtics font ",6"  
-set xtics autofreq 0, (1e14)  
 
 
 # Margins and layout
