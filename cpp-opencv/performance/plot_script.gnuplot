@@ -1,5 +1,5 @@
 # Set the output format
-set terminal pngcairo enhanced font "arial,10" fontscale 1.0 size 1000, 600
+set terminal png size 1200,800 
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
