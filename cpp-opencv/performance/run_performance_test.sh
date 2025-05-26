@@ -18,6 +18,7 @@ if [ ! -d "${RECORDING_DIR}" ]; then
   echo "Error: Directory not found at ${RECORDING_DIR}"
   exit 1
 fi
+
 # Attempt to fetch previous jobs if CI is running
 if [ -n "$CI" ]; then
   echo "Running in CI environment, attempting to fetch previous jobs..."
@@ -35,13 +36,6 @@ if [ -n "$CI" ]; then
   # Extract the ID of the latest successful job in the "performance" stage
   previous_perf_job_id=$(echo "$response" | jq '[.[] | select(.stage == "performance" and .status == "success")] | first | .id')
 
-  if [ "$previous_perf_job_id" = "null" ] || [ -z "$previous_perf_job_id" ]; then
-    echo "No previous successful 'performance' job found."
-  else
-    echo "Previous successful 'performance' job ID: $previous_perf_job_id"
-  fi
-
-  echo "----------------------------------"
   if [ "$previous_perf_job_id" = "null" ] || [ -z "$previous_perf_job_id" ]; then
     echo "No previous successful 'performance' job found."
   else
@@ -64,7 +58,6 @@ if [ -n "$CI" ]; then
   fi
 fi
 
-
 # Process each .rec file
 for rec_file in "${RECORDING_DIR}"/*.rec; do
   [ -e "${rec_file}" ] || continue
@@ -85,7 +78,7 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
     --rec="/data/${filename}.rec" \
     --output="/output/${filename}_${COMMIT_HASH}.csv" \
     | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$' \
-    | gnuplot -e "output_png='${output_png}'" -c plot_script.gnuplot
+    | gnuplot -e "output_png='${output_png}';csv_file='${filename}_${COMMIT_HASH}.csv'" -c plot_script.gnuplot
   
   if [ $? -ne 0 ]; then
     echo "Error processing ${filename}.rec"
