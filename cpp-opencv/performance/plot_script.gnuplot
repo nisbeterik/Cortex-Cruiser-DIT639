@@ -20,7 +20,6 @@ unset timefmt
 unset format x
 
 # Rotate x-axis labels and adjust spacing
-set xtics rotate by -30 offset -1,-0.2
 set xtics font ",8"  # Smaller font for timestamps
 
 # Adjust margins to make room for rotated labels
