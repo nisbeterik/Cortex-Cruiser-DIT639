@@ -3,11 +3,14 @@
 RECORDING_DIR="src/recordings"
 OUTPUT_DIR="plots"
 CSV_OUTPUT_DIR="output"
+PREVIOUS_OUTPUT_DIR="previous_plots"
 COMMIT_HASH="$1"
 
 # Create directories if they don't exist
 mkdir -p "${OUTPUT_DIR}"
 mkdir -p "${CSV_OUTPUT_DIR}" 
+mkdir -p "${PREVIOUS_OUTPUT_DIR}"
+mkdir -p "${PREVIOUS_CSV_DIR}"
 
 # Verify recording directory exists
 if [ ! -d "${RECORDING_DIR}" ]; then
@@ -48,13 +51,14 @@ if [ -n "$CI" ]; then
     curl -sS --header "PRIVATE-TOKEN: $CI_API_TOKEN" \
       -o "${PREVIOUS_OUTPUT_DIR}/artifacts.zip" \
       "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/$previous_perf_job_id/artifacts"
-    ls cpp-opencv/performance/$OUTPUT_DIR
     
     if [ $? -eq 0 ]; then
       echo "Successfully downloaded artifacts"
       # Unzip the artifacts
       unzip -qo "${PREVIOUS_OUTPUT_DIR}/artifacts.zip" -d "${PREVIOUS_OUTPUT_DIR}"
       echo "Artifacts extracted to ${PREVIOUS_OUTPUT_DIR}"
+      echo "Previous output directory contents"
+      ls cpp-opencv/performance/$PREVIOUS_OUTPUT_DIR
     else
       echo "Failed to download artifacts from previous job"
     fi
