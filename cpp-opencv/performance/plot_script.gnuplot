@@ -1,5 +1,5 @@
 # Set the output format
-set terminal png size 1200,800 
+set terminal png size 1000,600 
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
