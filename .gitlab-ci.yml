@@ -26,7 +26,7 @@ services:
   - name: docker:24.0.2-dind
 
 stages:
-  - performance
+  - eriksprivatestage 
   - build
   - test
   - deploy
@@ -42,7 +42,7 @@ before_script:
 performance:
   tags:
     - docker-group6
-  stage: performance
+  stage: eriksprivatestage
   image: docker:24.0.2
   services:
     - docker:24.0.2-dind
