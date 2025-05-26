@@ -1,34 +1,35 @@
-#!/usr/bin/gnuplot -persist
-
-# Set output to PNG with dynamic filename
-set terminal png size 1200,800 
+# Set the output format
+set terminal pngcairo enhanced font "arial,10" fontscale 1.0 size 1000, 600
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
-# Data format: timestamp;groundTruth;groundSteering;accuracy
-set datafile separator ';'
+# Set the title and labels
+set title "Steering Values Over Time"
+set xlabel "Timestamp (μs)" offset 0,-1
+set ylabel "Steering Value"
 
-# Read piped data, filter valid lines, and extract last accuracy
-valid_data = system("cat /dev/stdin | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$'")
-set print $dummy
-print valid_data
-set print
+# Set grid
+set grid
 
-# Get last accuracy value
-stats $dummy using 4 nooutput
-last_accuracy = STATS_max
+# Set data separator (comma for CSV)
+set datafile separator ','
 
-# Remove time formatting and use raw timestamp values
+# Disable time formatting and use raw microseconds
 unset xdata
 unset timefmt
 unset format x
 
-# Labels and title
-set title "Group 06 - Cortex Cruiser"
-set xlabel "Timestamp" 
-set ylabel "Value"
-set grid
+# Rotate x-axis labels and adjust spacing
+set xtics rotate by -30 offset -1,-0.2
+set xtics font ",8"  # Smaller font for timestamps
 
-# Plot using raw timestamp values
-plot $dummy using ($1/1e6):2 with lines lw 1 title "groundTruth", \
-     $dummy using ($1/1e6):3 with lines lw 2 title "groundSteering"
+# Adjust margins to make room for rotated labels
+set bmargin 5
+
+# Make sure we're using numeric formatting for x-axis
+set format x "%.0f"
+
+# Define the plot using raw microseconds
+plot 'comb.csv' using 1:2 with lines title 'Ground Truth', \
+     '' using 1:3 with lines title 'Ground Steering', \
+     '' using 1:4 with lines title 'Previous Ground Steering'
