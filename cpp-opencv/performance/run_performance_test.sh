@@ -103,30 +103,9 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
                 --rec="/data/${filename}.rec" \
                 --output="/output/${filename}_${COMMIT_HASH}.csv" \
             | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+'
-    
-    if [ $? -ne 0 ]; then
-        echo "Error processing ${filename}.rec"
-        exit 1
-    fi
-    
-    echo "Successfully generated: ${output_png} and ${output_csv}"
-    echo "----------------------------------"
-done
-
-echo "All recordings processed successfully"
+            
             echo "PREVIOUS_DATA_MARKER"
             cat "$previous_csv_file" | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+'
-    
-    if [ $? -ne 0 ]; then
-        echo "Error processing ${filename}.rec"
-        exit 1
-    fi
-    
-    echo "Successfully generated: ${output_png} and ${output_csv}"
-    echo "----------------------------------"
-done
-
-echo "All recordings processed successfully"
         } | gnuplot -e "output_png='${output_png}'; has_previous=1" -c plot_script.gnuplot
     else
         echo "No previous CSV found for ${filename}, plotting current data only"
@@ -136,18 +115,7 @@ echo "All recordings processed successfully"
             performance:latest \
             --rec="/data/${filename}.rec" \
             --output="/output/${filename}_${COMMIT_HASH}.csv" \
-        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+'
-    
-    if [ $? -ne 0 ]; then
-        echo "Error processing ${filename}.rec"
-        exit 1
-    fi
-    
-    echo "Successfully generated: ${output_png} and ${output_csv}"
-    echo "----------------------------------"
-done
-
-echo "All recordings processed successfully" \
+        | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+' \
         | gnuplot -e "output_png='${output_png}'; has_previous=0" -c plot_script.gnuplot
     fi
     
