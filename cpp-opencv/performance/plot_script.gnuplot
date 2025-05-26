@@ -1,5 +1,5 @@
 # Output settings
-set terminal png size 1200,600
+set terminal png size 1300,600
 if (!exists("output_png")) output_png = 'plot.png'
 set output output_png
 
@@ -18,7 +18,7 @@ set datafile separator ','
 # X-axis configuration (raw microseconds)
 unset xdata
 unset timefmt
-unset format x
+set format x "%.0f"
 
 # Rotate x-axis labels and adjust spacing
 set xtics font ",6"  
