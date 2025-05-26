@@ -4,20 +4,20 @@ RECORDING_DIR="src/recordings"
 OUTPUT_DIR="plots"
 CSV_OUTPUT_DIR="output"
 PREVIOUS_OUTPUT_DIR="previous_plots"
-PREVIOUS_CSV_DIR="previous_output" 
 COMMIT_HASH="$1"
 
 # Create directories if they don't exist
 mkdir -p "${OUTPUT_DIR}"
 mkdir -p "${CSV_OUTPUT_DIR}" 
 mkdir -p "${PREVIOUS_OUTPUT_DIR}"
-mkdir -p "${PREVIOUS_CSV_DIR}"
+chmod +x combine.sh
 
 # Verify recording directory exists
 if [ ! -d "${RECORDING_DIR}" ]; then
   echo "Error: Directory not found at ${RECORDING_DIR}"
   exit 1
 fi
+
 # Attempt to fetch previous jobs if CI is running
 if [ -n "$CI" ]; then
   echo "Running in CI environment, attempting to fetch previous jobs..."
@@ -58,12 +58,12 @@ if [ -n "$CI" ]; then
       # Unzip the artifacts
       unzip -qo "${PREVIOUS_OUTPUT_DIR}/artifacts.zip" -d "${PREVIOUS_OUTPUT_DIR}"
       echo "Artifacts extracted to ${PREVIOUS_OUTPUT_DIR}"
+      ls "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" 
     else
       echo "Failed to download artifacts from previous job"
     fi
   fi
 fi
-
 
 # Process each .rec file
 for rec_file in "${RECORDING_DIR}"/*.rec; do
@@ -71,28 +71,65 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   
   filename=$(basename "${rec_file}" .rec)
   output_png="${OUTPUT_DIR}/${filename}_${COMMIT_HASH}.png"
-  output_csv="${CSV_OUTPUT_DIR}/${filename}_${COMMIT_HASH}.csv" 
+  output_csv="${CSV_OUTPUT_DIR}/${filename}_${COMMIT_HASH}_current.csv" 
+  combined_csv="comb.csv"
   
   echo "Processing recording file: ${filename}.rec"
   echo "Plot will be saved to: ${output_png}"
-  echo "CSV will be saved to: ${output_csv}"
-  
-  # Process the recording and generate plot
+  echo "Current CSV will be saved to: ${output_csv}"
+
+  # First run the docker image to generate the current CSV
   docker run \
     -v "$(pwd)/${RECORDING_DIR}:/data" \
     -v "$(pwd)/${CSV_OUTPUT_DIR}:/output" \
     performance:latest \
     --rec="/data/${filename}.rec" \
-    --output="/output/${filename}_${COMMIT_HASH}.csv" \
-    | grep -E '^[0-9]+;-?[0-9.]+;-?[0-9.]+;[0-9.]+$' \
-    | gnuplot -e "output_png='${output_png}'" -c plot_script.gnuplot
+    --output="/output/${filename}_${COMMIT_HASH}.csv"
   
   if [ $? -ne 0 ]; then
     echo "Error processing ${filename}.rec"
     exit 1
   fi
+
+  # Find the most recent matching previous CSV file (excluding _current)
+  if [ -d "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" ]; then
+    echo "Looking for most recent previous CSV file matching: ${filename}*.csv (excluding _current files)"
+    previous_csv_file=$(find "${PREVIOUS_OUTPUT_DIR}/cpp-opencv/performance/output" -name "${filename}*.csv" ! -name "*_current.csv")
+    
+    if [ -n "$previous_csv_file" ]; then
+      echo "Found previous CSV file: ${previous_csv_file}"
+      
+      # Run combine.sh with current and previous CSV files
+      echo "Combining current and previous CSV files..."
+      sh combine.sh "${output_csv}" "${previous_csv_file}" "${combined_csv}"
+      
+      
+      if [ $? -ne 0 ]; then
+        echo "Error combining CSV files"
+        exit 1
+      fi
+      
+      # Use the combined CSV for plotting
+      plotting_csv="${combined_csv}"
+    else
+      echo "No previous CSV file found for ${filename} (excluding _current files), using current CSV only"
+      plotting_csv="${output_csv}"
+    fi
+  else
+    echo "Previous output directory not found, using current CSV only"
+    plotting_csv="${output_csv}"
+  fi
+
+  # Generate plot using the selected CSV file
+  echo "Generating plot from: ${plotting_csv}"
+  gnuplot -e "output_png='${output_png}'" plot_script.gnuplot
   
-  echo "Successfully generated: ${output_png} and ${output_csv}"
+  if [ $? -ne 0 ]; then
+    echo "Error generating plot"
+    exit 1
+  fi
+  
+  echo "Successfully generated: ${output_png}"
   echo "----------------------------------"
 done
 
