@@ -41,7 +41,7 @@ before_script:
 # This section runs a performance tests the steering angle algorithm
 performance:
   tags:
-    - docker-build
+    - docker-group6
   stage: performance
   image: docker:24.0.2
   services:
