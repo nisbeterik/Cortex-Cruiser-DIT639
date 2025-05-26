@@ -3,6 +3,7 @@
 RECORDING_DIR="src/recordings"
 OUTPUT_DIR="plots"
 CSV_OUTPUT_DIR="output"
+CURRENT_CSV_DIR="current"
 PREVIOUS_OUTPUT_DIR="previous_plots"
 PREVIOUS_CSV_DIR="previous_output" 
 COMMIT_HASH="$1"
@@ -70,7 +71,7 @@ for rec_file in "${RECORDING_DIR}"/*.rec; do
   filename=$(basename "${rec_file}" .rec)
   output_png="${OUTPUT_DIR}/${filename}_${COMMIT_HASH}.png"
   output_csv="${CSV_OUTPUT_DIR}/${filename}_${COMMIT_HASH}.csv"
-  current_csv="${CSV_OUTPUT_DIR}/${filename}_${COMMIT_HASH}_current.csv"
+  current_csv="${CURRENT_CSV_DIR}/${filename}_${COMMIT_HASH}_current.csv"
   combined_csv="${COMBINED_CSV_DIR}/${filename}_${COMMIT_HASH}_combined.csv"
   
   echo "Processing recording file: ${filename}.rec"
