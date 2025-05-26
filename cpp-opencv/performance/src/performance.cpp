@@ -142,7 +142,7 @@ int32_t main(int32_t argc, char **argv)
                                     acc = ((double)withinRange / totalValid) * 100.0;
                                 }
                                 std::cout << ts_ms << ";" << gsr.groundSteering() << ";" << calculatedSteering << ";" << acc << std::endl;
-                                computedFile << calculatedSteering << "," << acc << "\n";
+                                computedFile << ts_ms << calculatedSteering << "," << acc << "\n";
                                 hasAngle = false;
                             }
                         }
